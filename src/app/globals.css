@@ -1,26 +1,80 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #F8F9FA;
+  --foreground: #212529;
+  --primary: #0A4D68;
+  --primary-accent: #007BFF;
+  --card: #FFFFFF;
+  --border: rgba(0, 0, 0, 0.1);
+  --muted: #6c757d;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-background-light: #F8F9FA;
+  --color-background-dark: #101622;
+
+  --color-primary: #0A4D68;
+  --color-primary-accent: #007BFF;
+
+  --color-card-light: #FFFFFF;
+  --color-card-dark: #18202f;
+
+  --color-text-light: #212529;
+  --color-text-dark: #F8F9FA;
+  --color-text-secondary-light: #6c757d;
+  --color-text-secondary-dark: #adb5bd;
+
+  --color-border-light: rgba(0, 0, 0, 0.1);
+  --color-border-dark: #334155;
+
+  --color-text-light-primary: #1E293B;
+  --color-text-dark-primary: #F1F5F9;
+  --color-text-light-secondary: #64748B;
+  --color-text-dark-secondary: #94A3B8;
+  --color-border-light-alt: #E2E8F0;
+  --color-border-dark-alt: #334155;
+  --color-accent-light: #EFF6FF;
+  --color-accent-dark: rgba(19, 91, 236, 0.2);
+
+  --color-admin-primary: #135bec;
+  --color-admin-background: #f6f6f8;
+
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
+
+  --color-status-draft: #6C757D;
+  --color-status-published: #28A745;
+  --color-status-closed: #FFC107;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #101622;
+    --foreground: #f1f5f9;
+    --primary: #135bec;
+    --card: #182235;
+    --border: #334155;
+    --muted: #94a3b8;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.admin-theme {
+  --primary: #135bec;
+  --background: #f6f6f8;
+  --color-primary: #135bec;
+}
+
+.material-symbols-outlined {
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24
 }
