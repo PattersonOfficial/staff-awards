@@ -37,7 +37,7 @@ export default function Header() {
           </nav>
           <div className='bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 bg-gray-200 dark:bg-gray-700'></div>
         </div>
-        <button className='md:hidden text-text-light-primary dark:text-text-dark-primary'>
+        <button className='md:hidden text-text-light-primary dark:text-text-dark-primary cursor-pointer'>
           <span className='material-symbols-outlined'>menu</span>
         </button>
       </div>

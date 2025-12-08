@@ -40,12 +40,12 @@ export default function CancelNominationModal({
           <div className='flex gap-3'>
             <button
               onClick={onCancel}
-              className='flex-1 px-6 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 text-[#6c757d] dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors'>
+              className='flex-1 px-6 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 text-[#6c757d] dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors cursor-pointer'>
               Keep Nomination
             </button>
             <button
               onClick={() => onConfirm(nominationId)}
-              className='flex-1 px-6 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold transition-colors'>
+              className='flex-1 px-6 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold transition-colors cursor-pointer'>
               Yes, Cancel
             </button>
           </div>

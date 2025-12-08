@@ -22,7 +22,7 @@ export default function NominationDetailModal({
           </h2>
           <button
             onClick={onClose}
-            className='p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors'>
+            className='p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer'>
             <span className='material-symbols-outlined text-gray-500 dark:text-gray-400'>
               close
             </span>
@@ -163,7 +163,7 @@ export default function NominationDetailModal({
         <div className='sticky bottom-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex gap-3 justify-end'>
           <button
             onClick={onClose}
-            className='px-6 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 text-[#6c757d] dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors'>
+            className='px-6 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 text-[#6c757d] dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors cursor-pointer'>
             Close
           </button>
         </div>

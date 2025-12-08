@@ -48,7 +48,7 @@ export default function Toast({
         <p className='font-medium flex-1'>{message}</p>
         <button
           onClick={onClose}
-          className='hover:bg-white/20 rounded p-1 transition-colors'>
+          className='hover:bg-white/20 rounded p-1 transition-colors cursor-pointer'>
           <span className='material-symbols-outlined text-lg'>close</span>
         </button>
       </div>
