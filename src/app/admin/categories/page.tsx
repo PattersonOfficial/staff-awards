@@ -6,7 +6,7 @@ import Link from 'next/link';
 export default function AdminCategoriesPage() {
   return (
     <main className='flex flex-1 flex-col overflow-y-auto'>
-      <div className='p-6 lg:p-8'>
+      <div className='p-8'>
         <div className='mb-6 flex items-center justify-between'>
           <div>
             <h1 className='text-3xl font-bold text-text-light-primary dark:text-text-dark-primary'>
