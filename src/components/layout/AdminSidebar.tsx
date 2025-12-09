@@ -1,13 +1,16 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/supabase/hooks/useAuth';
+import LogoutConfirmationModal from '@/components/ui/LogoutConfirmationModal';
 
 export default function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { signOut } = useAuth();
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const isActive = (path: string) => {
     if (path === '/admin') {
@@ -16,13 +19,19 @@ export default function AdminSidebar() {
     return pathname.startsWith(path);
   };
 
-  const handleLogout = async (e: React.MouseEvent) => {
+  const handleLogoutClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    setIsLogoutModalOpen(true);
+  };
+
+  const handleConfirmLogout = async () => {
     try {
       await signOut();
       router.push('/');
     } catch (error) {
       console.error('Error signing out:', error);
+    } finally {
+      setIsLogoutModalOpen(false);
     }
   };
 
@@ -89,12 +98,18 @@ export default function AdminSidebar() {
       </nav>
       <div className='mt-auto'>
         <button
-          onClick={handleLogout}
+          onClick={handleLogoutClick}
           className='flex w-full items-center gap-3 rounded-lg px-3 py-2 text-text-light-secondary dark:text-text-dark-secondary hover:bg-accent-light dark:hover:bg-accent-dark hover:text-text-light-primary dark:hover:text-text-dark-primary transition-colors'>
           <span className='material-symbols-outlined text-xl'>logout</span>
           <span className='text-sm font-medium'>Logout</span>
         </button>
       </div>
+
+      <LogoutConfirmationModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={handleConfirmLogout}
+      />
     </aside>
   );
 }

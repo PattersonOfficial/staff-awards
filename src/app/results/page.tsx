@@ -2,80 +2,27 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Header from '@/components/layout/Header';
-import { mockCategories, mockStaff } from '@/data/mockData';
 import { VotingResult } from '@/types';
+import { getCategories, Category } from '@/supabase/services/categories';
+import { getStaff } from '@/supabase/services/staff';
+import { getVoteCounts } from '@/supabase/services/votes';
+import { AwardCategory } from '@/types';
 
-const mockResults: VotingResult[] = [
-  {
-    categoryId: '1',
-    category: mockCategories[0],
-    nominees: [
-      {
-        nominee: mockStaff[0],
-        voteCount: 245,
-        percentage: 42.5,
-      },
-      {
-        nominee: mockStaff[1],
-        voteCount: 178,
-        percentage: 30.9,
-      },
-      {
-        nominee: mockStaff[3],
-        voteCount: 153,
-        percentage: 26.6,
-      },
-    ],
-    totalVotes: 576,
-    status: 'completed',
-  },
-  {
-    categoryId: '2',
-    category: mockCategories[1],
-    nominees: [
-      {
-        nominee: mockStaff[2],
-        voteCount: 312,
-        percentage: 48.2,
-      },
-      {
-        nominee: mockStaff[4],
-        voteCount: 198,
-        percentage: 30.6,
-      },
-      {
-        nominee: mockStaff[6],
-        voteCount: 137,
-        percentage: 21.2,
-      },
-    ],
-    totalVotes: 647,
-    status: 'completed',
-  },
-  {
-    categoryId: '3',
-    category: mockCategories[2],
-    nominees: [
-      {
-        nominee: mockStaff[5],
-        voteCount: 289,
-        percentage: 51.3,
-      },
-      {
-        nominee: mockStaff[2],
-        voteCount: 156,
-        percentage: 27.7,
-      },
-      {
-        nominee: mockStaff[7],
-        voteCount: 118,
-        percentage: 21.0,
-      },
-    ],
-    totalVotes: 563,
-    status: 'completed',
-  },
-];
+// Helper to map Supabase Category to AwardCategory
+const mapCategory = (cat: Category): AwardCategory => ({
+  id: cat.id,
+  title: cat.title,
+  description: cat.description || '',
+  image: cat.image || '',
+  type: cat.type,
+  department: cat.department || '',
+  nominationDeadline: cat.nomination_end || cat.nomination_deadline || '',
+  status: cat.status as 'draft' | 'published' | 'closed',
+  shortlistingStart: cat.shortlisting_start,
+  shortlistingEnd: cat.shortlisting_end,
+  votingStart: cat.voting_start,
+  votingEnd: cat.voting_end,
+});
 
 export default function ResultsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | 'all'>(
@@ -83,18 +30,102 @@ export default function ResultsPage() {
   );
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [results, setResults] = useState<VotingResult[]>([]);
+  const [loading, setLoading] = useState(true);
   const filterRef = useRef<HTMLDivElement>(null);
+
+  // Fetch real data
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setLoading(true);
+        // 1. Fetch Categories and Staff
+        const [categories, staffList] = await Promise.all([
+          getCategories(),
+          getStaff(),
+        ]);
+
+        const staffMap = new Map(staffList?.map((s) => [s.id, s]));
+
+        // 2. Build Results for each category
+        const resultsData: VotingResult[] = [];
+
+        for (const cat of categories) {
+          // Only show results for closed or published categories? Or all?
+          // Usually results are shown after voting closes.
+          // For now, let's show all that have votes to demonstrate functionality.
+
+          // Get raw vote counts (nomineeId -> count)
+          const votes = await getVoteCounts(cat.id);
+
+          if (votes.length === 0) continue; // Skip categories with no votes
+
+          const totalVotes = votes.reduce((sum, v) => sum + v.count, 0);
+
+          // Map to Nominee Result
+          const nominees = votes
+            .map((v) => {
+              const staff = staffMap.get(v.nomineeId);
+              // Calculate percentage
+              const percentage =
+                totalVotes > 0
+                  ? parseFloat(((v.count / totalVotes) * 100).toFixed(1))
+                  : 0;
+
+              return {
+                nominee: {
+                  id: v.nomineeId,
+                  name: staff?.name || '',
+                  position: staff?.position || '',
+                  department: staff?.department || '',
+                  avatar: staff?.avatar || '',
+                  email: staff?.email || '',
+                  role: staff?.role || 'staff',
+                  joinedAt: staff?.created_at || '',
+                },
+                voteCount: v.count,
+                percentage,
+              };
+            })
+            .sort((a, b) => b.voteCount - a.voteCount); // Sort by highest votes
+
+          resultsData.push({
+            categoryId: cat.id,
+            category: mapCategory(cat),
+            nominees,
+            totalVotes,
+            status: 'completed', // You might want to derive this from cat.status
+          });
+        }
+
+        setResults(resultsData);
+      } catch (error) {
+        console.error('Error fetching results:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
 
   const filteredResults =
     selectedCategory === 'all'
-      ? mockResults
-      : mockResults.filter((result) => result.categoryId === selectedCategory);
+      ? results
+      : results.filter((result) => result.categoryId === selectedCategory);
+
+  const categoriesWithResults = results.map((r) => r.category);
 
   const selectedCategoryName =
     selectedCategory === 'all'
       ? 'All Categories'
-      : mockCategories.find((c) => c.id === selectedCategory)?.title ||
+      : categoriesWithResults.find((c) => c.id === selectedCategory)?.title ||
         'All Categories';
+
+  const totalVotesAcrossAll = results.reduce(
+    (acc, result) => acc + result.totalVotes,
+    0
+  );
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -114,6 +145,14 @@ export default function ResultsPage() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isFilterOpen]);
+
+  if (loading) {
+    return (
+      <div className='flex items-center justify-center min-h-screen bg-[#F8F9FA] dark:bg-background-dark'>
+        <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary'></div>
+      </div>
+    );
+  }
 
   return (
     <div className='relative flex min-h-screen w-full flex-col bg-[#F8F9FA] dark:bg-background-dark'>
@@ -165,9 +204,9 @@ export default function ResultsPage() {
                           ? 'bg-[#0A4D68] text-white'
                           : 'text-[#212529] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                       }`}>
-                      All Categories ({mockResults.length})
+                      All Categories ({results.length})
                     </button>
-                    {mockCategories.map((category) => (
+                    {categoriesWithResults.map((category) => (
                       <button
                         key={category.id}
                         onClick={() => {
@@ -198,17 +237,19 @@ export default function ResultsPage() {
                   how_to_vote
                 </span>
                 <span className='font-medium'>
-                  {filteredResults.reduce(
-                    (acc, result) => acc + result.totalVotes,
-                    0
-                  )}{' '}
+                  {selectedCategory === 'all'
+                    ? totalVotesAcrossAll
+                    : filteredResults.reduce(
+                        (acc, result) => acc + result.totalVotes,
+                        0
+                      )}{' '}
                   total votes
                 </span>
               </div>
               <div className='flex items-center gap-1 bg-white dark:bg-gray-800 rounded-lg p-1 border border-gray-200 dark:border-gray-700'>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 rounded-md transition-colors cursor-pointer ${
+                  className={`p-2 pb-0! rounded-md transition-colors cursor-pointer ${
                     viewMode === 'list'
                       ? 'bg-[#0A4D68] text-white'
                       : 'text-[#6c757d] dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -218,7 +259,7 @@ export default function ResultsPage() {
                 </button>
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-md transition-colors cursor-pointer ${
+                  className={`p-2 pb-0! rounded-md transition-colors cursor-pointer ${
                     viewMode === 'grid'
                       ? 'bg-[#0A4D68] text-white'
                       : 'text-[#6c757d] dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -464,7 +505,7 @@ export default function ResultsPage() {
                 No Results Available
               </h3>
               <p className='text-[#6c757d] dark:text-text-dark-secondary'>
-                Results for this category will be published soon.
+                Results will appear here once voting has taken place.
               </p>
             </div>
           )}

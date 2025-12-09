@@ -7,26 +7,47 @@ import Header from '@/components/layout/Header';
 import NominationDetailModal from '@/components/ui/NominationDetailModal';
 import CancelNominationModal from '@/components/ui/CancelNominationModal';
 import Toast from '@/components/ui/Toast';
-import { mockNominations } from '@/data/mockData';
-import { Nomination } from '@/types';
+import {
+  getNominationsByNominatorId,
+  deleteNomination,
+  NominationWithDetails,
+} from '@/supabase/services/nominations';
+import { getStaffByEmail } from '@/supabase/services/staff';
+import { Nomination as SupabaseNomination } from '@/supabase/services/nominations';
+
+// Map Supabase NominationWithDetails to strict UI Nomination type if needed, but let's try to align types.
+// The UI components expect a specific shape. Let's look at `src/types/index.ts` or similar if it exists.
+// Or just use `NominationWithDetails` and adapt UI if needed.
+// For now, I'll adapt the fetched data to the shape expected by the UI render.
+// The UI render expects: { id, status, submittedAt, nominee: { name, avatar, position }, category: { title } }
+
+// Helper type for UI
+type UINomination = {
+  id: string;
+  status: 'pending' | 'approved' | 'rejected' | 'shortlisted';
+  submittedAt: string;
+  nominee: {
+    name: string;
+    avatar: string;
+    position: string;
+  };
+  category: {
+    title: string;
+  };
+  reason?: string; // For modal
+};
 
 export default function MyNominationsPage() {
   const router = useRouter();
   const { user, loading } = useAuth();
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-    }
-  }, [user, loading, router]);
-
   const [filter, setFilter] = useState<
     'all' | 'pending' | 'approved' | 'rejected'
   >('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
-  const [nominations, setNominations] = useState(mockNominations);
+  const [nominations, setNominations] = useState<UINomination[]>([]);
   const [selectedNomination, setSelectedNomination] =
-    useState<Nomination | null>(null);
+    useState<UINomination | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [nominationToCancel, setNominationToCancel] = useState<{
@@ -35,8 +56,63 @@ export default function MyNominationsPage() {
   } | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [loadingData, setLoadingData] = useState(true);
 
-  if (loading) {
+  useEffect(() => {
+    async function fetchUserNominations() {
+      if (!user?.email) return;
+
+      try {
+        setLoadingData(true);
+        // 1. Get Staff ID from Email
+        const staff = await getStaffByEmail(user.email);
+        if (!staff) {
+          console.warn('No staff profile found for email:', user.email);
+          setLoadingData(false);
+          return;
+        }
+
+        // 2. Get Nominations
+        const data = await getNominationsByNominatorId(staff.id);
+
+        // 3. Map to UI
+        const mapped: UINomination[] = data.map((n) => ({
+          id: n.id,
+          status: n.status as any,
+          submittedAt: n.created_at,
+          nominee: {
+            name: n.nominee.name,
+            avatar:
+              n.nominee.avatar ||
+              `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                n.nominee.name
+              )}`,
+            position: n.nominee.position || 'Unknown',
+          },
+          category: {
+            title: n.category.title,
+          },
+          reason: n.reason || '',
+        }));
+
+        setNominations(mapped);
+      } catch (err) {
+        console.error('Error fetching nominations:', err);
+      } finally {
+        setLoadingData(false);
+      }
+    }
+
+    if (!loading) {
+      if (!user) {
+        router.push('/login');
+      } else {
+        fetchUserNominations();
+      }
+    }
+  }, [user, loading, router]);
+
+  if (loading || loadingData) {
     return (
       <div className='flex h-screen w-full items-center justify-center bg-[#F8F9FA] dark:bg-background-dark'>
         <div className='h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent'></div>
@@ -53,7 +129,7 @@ export default function MyNominationsPage() {
       ? nominations
       : nominations.filter((n) => n.status === filter);
 
-  const handleViewNomination = (nomination: Nomination) => {
+  const handleViewNomination = (nomination: UINomination) => {
     setSelectedNomination(nomination);
     setIsDetailModalOpen(true);
   };
@@ -63,15 +139,22 @@ export default function MyNominationsPage() {
     setIsCancelModalOpen(true);
   };
 
-  const handleConfirmCancel = (nominationId: string) => {
-    const canceledNomination = nominations.find((n) => n.id === nominationId);
-    setNominations((prev) => prev.filter((n) => n.id !== nominationId));
-    setIsCancelModalOpen(false);
-    setNominationToCancel(null);
-    setToastMessage(
-      `Nomination for ${canceledNomination?.nominee.name} has been canceled`
-    );
-    setShowToast(true);
+  const handleConfirmCancel = async (nominationId: string) => {
+    try {
+      await deleteNomination(nominationId);
+      const canceledNomination = nominations.find((n) => n.id === nominationId);
+      setNominations((prev) => prev.filter((n) => n.id !== nominationId));
+      setIsCancelModalOpen(false);
+      setNominationToCancel(null);
+      setToastMessage(
+        `Nomination for ${canceledNomination?.nominee.name} has been canceled`
+      );
+      setShowToast(true);
+    } catch (error) {
+      console.error('Error canceling nomination:', error);
+      setToastMessage('Failed to cancel nomination. Please try again.');
+      setShowToast(true);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -328,7 +411,7 @@ export default function MyNominationsPage() {
       <NominationDetailModal
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
-        nomination={selectedNomination}
+        nomination={selectedNomination as any} // Cast safely due to structure match
       />
 
       <CancelNominationModal

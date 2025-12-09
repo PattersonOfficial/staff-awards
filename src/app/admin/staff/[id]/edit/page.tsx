@@ -1,10 +1,14 @@
 'use client';
 
-import { use } from 'react';
+import { use, useEffect, useState } from 'react';
 import AdminHeader from '@/components/layout/AdminHeader';
 import Link from 'next/link';
-import { mockStaff } from '@/data/mockData';
-import { notFound } from 'next/navigation';
+import {
+  getStaffById,
+  updateStaff,
+  StaffMember,
+} from '@/supabase/services/staff';
+import { notFound, useRouter } from 'next/navigation';
 
 export default function EditStaffPage({
   params,
@@ -12,11 +16,63 @@ export default function EditStaffPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const staff = mockStaff.find((s) => s.id === id);
+  const router = useRouter();
+  const [staff, setStaff] = useState<StaffMember | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    async function fetchStaff() {
+      try {
+        setLoading(true);
+        const data = await getStaffById(id);
+        if (data) {
+          setStaff(data);
+        } else {
+          // If null returned, handled by check below or explicit notFound() call if we prefer
+          // But component render expects staff
+        }
+      } catch (error) {
+        console.error('Error fetching staff member:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchStaff();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className='p-8 text-center text-gray-500'>
+        Loading staff details...
+      </div>
+    );
+  }
 
   if (!staff) {
     notFound();
   }
+
+  const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSaving(true);
+    const formData = new FormData(e.currentTarget);
+
+    try {
+      await updateStaff(id, {
+        name: formData.get('name') as string,
+        email: formData.get('email') as string,
+        position: formData.get('position') as string,
+        department: formData.get('department') as string,
+      });
+      router.push('/admin/staff');
+    } catch (error) {
+      console.error('Error updating staff:', error);
+      alert('Failed to update staff member.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const departments = [
     'Business Intelligence',
@@ -68,7 +124,7 @@ export default function EditStaffPage({
 
           {/* Form Container */}
           <div className='bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 md:p-8'>
-            <form className='space-y-8' onSubmit={(e) => e.preventDefault()}>
+            <form className='space-y-8' onSubmit={handleSave}>
               {/* Personal Information */}
               <div>
                 <h3 className='text-gray-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] pb-4 border-b border-gray-200 dark:border-gray-800'>
@@ -81,10 +137,12 @@ export default function EditStaffPage({
                       Full Name
                     </p>
                     <input
+                      name='name'
                       className='appearance-none block w-full min-w-0 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark focus:border-primary h-12 placeholder:text-gray-400 px-4 text-base font-normal leading-normal'
                       placeholder='e.g., Jane Doe'
                       type='text'
                       defaultValue={staff.name}
+                      required
                     />
                   </label>
 
@@ -94,10 +152,12 @@ export default function EditStaffPage({
                       Email Address
                     </p>
                     <input
+                      name='email'
                       className='appearance-none block w-full min-w-0 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark focus:border-primary h-12 placeholder:text-gray-400 px-4 text-base font-normal leading-normal'
                       placeholder='e.g., jane.doe@example.com'
                       type='email'
                       defaultValue={staff.email}
+                      required
                     />
                   </label>
                 </div>
@@ -109,7 +169,12 @@ export default function EditStaffPage({
                   </p>
                   <div className='mt-2 flex items-center gap-6'>
                     <img
-                      src={staff.avatar}
+                      src={
+                        staff.avatar ||
+                        `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                          staff.name
+                        )}&background=random`
+                      }
                       alt={staff.name}
                       className='h-20 w-20 rounded-full object-cover border border-gray-200 dark:border-gray-700'
                     />
@@ -146,10 +211,11 @@ export default function EditStaffPage({
                       Position / Title
                     </p>
                     <input
+                      name='position'
                       className='appearance-none block w-full min-w-0 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark focus:border-primary h-12 placeholder:text-gray-400 px-4 text-base font-normal leading-normal'
                       placeholder='e.g., Senior Designer'
                       type='text'
-                      defaultValue={staff.position}
+                      defaultValue={staff.position || ''}
                     />
                   </label>
 
@@ -160,8 +226,9 @@ export default function EditStaffPage({
                     </p>
                     <div className='relative'>
                       <select
+                        name='department'
                         className='appearance-none block w-full min-w-0 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark focus:border-primary h-12 px-4 pr-10 text-base font-normal leading-normal'
-                        defaultValue={staff.department}>
+                        defaultValue={staff.department || ''}>
                         {departments.map((dept) => (
                           <option key={dept} value={dept}>
                             {dept}
@@ -184,9 +251,12 @@ export default function EditStaffPage({
                   <span className='truncate'>Cancel</span>
                 </Link>
                 <button
-                  className='flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-11 px-6 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] shadow-sm hover:bg-primary/90'
-                  type='submit'>
-                  <span className='truncate'>Save Changes</span>
+                  className='flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-11 px-6 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] shadow-sm hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed'
+                  type='submit'
+                  disabled={saving}>
+                  <span className='truncate'>
+                    {saving ? 'Saving...' : 'Save Changes'}
+                  </span>
                 </button>
               </div>
             </form>

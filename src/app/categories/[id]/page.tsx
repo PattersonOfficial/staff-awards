@@ -19,18 +19,17 @@ import {
 import { castVote, hasUserVoted } from '@/supabase/services/votes';
 import { getNominationsByCategory } from '@/supabase/services/nominations';
 import { useAuth } from '@/supabase/hooks/useAuth';
-import { mockCategories, mockStaff } from '@/data/mockData';
 import { AwardCategory, Staff } from '@/types';
 
 // Helper to map Supabase Category to AwardCategory
 const mapCategory = (cat: SupabaseCategory): AwardCategory => ({
   id: cat.id,
   title: cat.title,
-  description: cat.description,
-  image: cat.image,
+  description: cat.description || '',
+  image: cat.image || '/assets/images/award-placeholder.jpg', // Fallback image if null
   type: cat.type as 'Individual Award' | 'Team Award',
-  department: cat.department,
-  nominationDeadline: cat.nomination_end || cat.nomination_deadline,
+  department: cat.department || 'All Departments',
+  nominationDeadline: cat.nomination_end || cat.nomination_deadline || '',
   status: cat.status as 'draft' | 'published' | 'closed',
   shortlistingStart: cat.shortlisting_start,
   shortlistingEnd: cat.shortlisting_end,
@@ -43,8 +42,8 @@ const mapStaff = (s: SupabaseStaff): Staff => ({
   id: s.id,
   name: s.name,
   email: s.email,
-  position: s.position,
-  department: s.department,
+  position: s.position || '',
+  department: s.department || '',
   avatar:
     s.avatar ||
     `https://ui-avatars.com/api/?name=${encodeURIComponent(s.name)}`,
@@ -90,15 +89,7 @@ export default function CategoryPage() {
             fetchedCategory = mapCategory(catData);
           }
         } catch (err) {
-          console.log(
-            'Supabase category fetch failed, falling back to mock',
-            err
-          );
-        }
-
-        if (!fetchedCategory) {
-          const mockCat = mockCategories.find((c) => c.id === categoryId);
-          if (mockCat) fetchedCategory = mockCat;
+          console.log('Supabase category fetch failed', err);
         }
 
         setCategory(fetchedCategory);
@@ -158,7 +149,6 @@ export default function CategoryPage() {
           } catch (err) {
             console.log('Supabase staff fetch failed', err);
           }
-          if (fetchedStaff.length === 0) fetchedStaff = mockStaff;
         }
 
         setStaffList(fetchedStaff);

@@ -3,7 +3,7 @@ export interface AwardCategory {
   title: string;
   description: string;
   image: string | null;
-  type: 'Individual Award' | 'Team Award';
+  type: string;
   department?: string | null;
   nominationDeadline: string;
   status: 'draft' | 'published' | 'closed';

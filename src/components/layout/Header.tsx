@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/supabase/hooks/useAuth';
+import LogoutConfirmationModal from '@/components/ui/LogoutConfirmationModal';
 
 export default function Header() {
   const router = useRouter();
@@ -11,6 +12,7 @@ export default function Header() {
   const { user, signOut } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const userName = user?.staff?.name || user?.email || 'User';
@@ -36,12 +38,20 @@ export default function Header() {
     };
   }, []);
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
+    setIsLogoutModalOpen(true);
+    setIsDropdownOpen(false);
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleConfirmLogout = async () => {
     try {
       await signOut();
       router.push('/login');
     } catch (error) {
       console.error('Error signing out:', error);
+    } finally {
+      setIsLogoutModalOpen(false);
     }
   };
 
@@ -192,6 +202,12 @@ export default function Header() {
           </nav>
         </div>
       )}
+
+      <LogoutConfirmationModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={handleConfirmLogout}
+      />
     </header>
   );
 }

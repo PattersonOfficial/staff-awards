@@ -9,7 +9,11 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 let supabase: SupabaseClient<Database>;
 
 if (supabaseUrl && supabaseAnonKey) {
-  supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+  supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      flowType: 'pkce',
+    },
+  });
 } else {
   // Create a placeholder client for build purposes
   // This will throw errors at runtime if actually used without proper env vars

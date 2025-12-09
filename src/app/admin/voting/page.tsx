@@ -1,45 +1,112 @@
 'use client';
 
-import { useState } from 'react';
-import AdminHeader from '@/components/layout/AdminHeader';
+import { useState, useEffect } from 'react';
 import PublishWinnerModal from '@/components/ui/PublishWinnerModal';
-import { mockCategories, mockStaff } from '@/data/mockData';
+import { getCategories, Category } from '@/supabase/services/categories';
+import { getVoteCounts, VoteCount } from '@/supabase/services/votes';
+import { getStaff, StaffMember } from '@/supabase/services/staff';
+
+interface FormattedVoteData {
+  staff: {
+    id: string;
+    name: string;
+    department: string;
+    avatar?: string;
+  };
+  voteCount: number;
+  percentage: string;
+}
 
 export default function VotingResultsPage() {
-  const [selectedCategoryId, setSelectedCategoryId] = useState(
-    mockCategories[0].id
-  );
-
-  const selectedCategory =
-    mockCategories.find((c) => c.id === selectedCategoryId) ||
-    mockCategories[0];
-
-  // Mock voting data generation based on the selected category
-  const generateMockResults = (categoryId: string) => {
-    // Deterministic pseudo-random generation based on categoryId
-    const seed = categoryId.charCodeAt(0);
-    const totalVotes = 120 + seed * 5; // Randomish total
-
-    // Pick 5 random staff as finalists
-    const finalists = mockStaff.slice(0, 5).map((staff, index) => {
-      const voteCount = Math.floor(totalVotes * (0.4 - index * 0.05)); // Descending votes
-      return {
-        staff,
-        voteCount,
-        percentage: ((voteCount / totalVotes) * 100).toFixed(2),
-      };
-    });
-
-    return { totalVotes, finalists };
-  };
-
-  const { totalVotes, finalists } = generateMockResults(selectedCategoryId);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
+  const [voteData, setVoteData] = useState<FormattedVoteData[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // State for publish status
   const [isPublished, setIsPublished] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  useEffect(() => {
+    async function fetchInitialData() {
+      try {
+        const cats = await getCategories();
+        if (cats && cats.length > 0) {
+          setCategories(cats);
+          setSelectedCategoryId(cats[0].id);
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchInitialData();
+  }, []);
+
+  const selectedCategory = categories.find((c) => c.id === selectedCategoryId);
+
+  useEffect(() => {
+    async function fetchCategoryResults() {
+      if (!selectedCategoryId) return;
+
+      try {
+        const [counts, staffList] = await Promise.all([
+          getVoteCounts(selectedCategoryId),
+          getStaff(),
+        ]);
+
+        const totalVotes = counts.reduce(
+          (sum: number, item: VoteCount) => sum + item.count,
+          0
+        );
+
+        // Optimize staff lookup
+        const staffMap = new Map<string, StaffMember>();
+        if (staffList) {
+          staffList.forEach((s) => staffMap.set(s.id, s));
+        }
+
+        const formattedData: FormattedVoteData[] = counts.map(
+          (item: VoteCount) => {
+            const staffMember = staffMap.get(item.nomineeId);
+            return {
+              staff: {
+                id: item.nomineeId,
+                name: staffMember?.name || 'Unknown Nominee',
+                department: staffMember?.department || 'Unknown',
+                avatar: staffMember?.avatar || undefined,
+              },
+              voteCount: item.count,
+              percentage:
+                totalVotes > 0
+                  ? ((item.count / totalVotes) * 100).toFixed(2)
+                  : '0.00',
+            };
+          }
+        );
+
+        // Sort by vote count desc
+        formattedData.sort((a, b) => b.voteCount - a.voteCount);
+
+        setVoteData(formattedData);
+      } catch (error) {
+        console.error('Error fetching vote counts:', error);
+      }
+    }
+
+    if (selectedCategoryId) {
+      fetchCategoryResults();
+      setIsPublished(false); // Reset publish state on change
+    }
+  }, [selectedCategoryId]);
+
+  const totalVotes = voteData.reduce((sum, item) => sum + item.voteCount, 0);
+  const finalists = voteData; // In real app, we might limit to top N
+
   const handleExportCSV = () => {
+    if (!selectedCategory) return;
+
     // 1. Define CSV headers
     const headers = ['Nominee', 'Department', 'Vote Count', 'Vote Share (%)'];
 
@@ -84,6 +151,18 @@ export default function VotingResultsPage() {
     // In a real app, this would make an API call to update the backend
   };
 
+  if (loading) {
+    return (
+      <div className='p-8 text-center text-gray-500'>Loading results...</div>
+    );
+  }
+
+  if (!selectedCategory) {
+    return (
+      <div className='p-8 text-center text-gray-500'>No categories found.</div>
+    );
+  }
+
   return (
     <main className='flex flex-1 flex-col overflow-y-auto bg-background-light dark:bg-background-dark'>
       <PublishWinnerModal
@@ -106,13 +185,10 @@ export default function VotingResultsPage() {
               </p>
             </div>
             <nav className='flex flex-col gap-2'>
-              {mockCategories.map((category) => (
+              {categories.map((category) => (
                 <button
                   key={category.id}
-                  onClick={() => {
-                    setSelectedCategoryId(category.id);
-                    setIsPublished(false); // Reset publish state when switching categories for demo
-                  }}
+                  onClick={() => setSelectedCategoryId(category.id)}
                   className={`flex items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors ${
                     selectedCategoryId === category.id
                       ? 'bg-primary/10 text-primary'
@@ -249,7 +325,12 @@ export default function VotingResultsPage() {
                           <div className='flex items-center gap-4'>
                             <img
                               className='h-10 w-10 rounded-full object-cover'
-                              src={item.staff.avatar}
+                              src={
+                                item.staff.avatar ||
+                                `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                  item.staff.name
+                                )}&background=random`
+                              }
                               alt={item.staff.name}
                             />
                             <div>

@@ -1,21 +1,78 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '@/components/layout/Header';
 import AwardCategoryCard from '@/components/ui/AwardCategoryCard';
 import SearchBar from '@/components/ui/SearchBar';
-import { mockCategories } from '@/data/mockData';
+import {
+  getCategories,
+  Category as SupabaseCategory,
+} from '@/supabase/services/categories';
+import { AwardCategory } from '@/types';
 import Link from 'next/link';
 
+// Helper to map Supabase Category to AwardCategory
+const mapCategory = (cat: SupabaseCategory): AwardCategory => ({
+  id: cat.id,
+  title: cat.title,
+  description: cat.description || '', // Fallback for description if null (though schema says string?)
+  image: cat.image || '', // Fallback for image
+  type: cat.type,
+  department: cat.department || '', // Fallback for department
+  nominationDeadline: cat.nomination_end || cat.nomination_deadline || '',
+  status: cat.status as 'draft' | 'published' | 'closed',
+  shortlistingStart: cat.shortlisting_start,
+  shortlistingEnd: cat.shortlisting_end,
+  votingStart: cat.voting_start,
+  votingEnd: cat.voting_end,
+});
+
 export default function Home() {
+  const [categories, setCategories] = useState<AwardCategory[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  const filteredCategories = mockCategories.filter(
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const data = await getCategories();
+        if (data && data.length > 0) {
+          // Filter out drafts if this is public view
+          const publicCategories = data
+            .filter((c) => c.status !== 'draft')
+            .map(mapCategory);
+          setCategories(publicCategories);
+        } else {
+          // Fallback if DB is empty for demo purposes, or keep empty
+          // For now, let's show empty state if DB is empty to prove real data connection
+          setCategories([]);
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        // Fallback to mock on error? Or show empty?
+        // Let's use mock for robustness if error occurs
+        setCategories([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchCategories();
+  }, []);
+
+  const filteredCategories = categories.filter(
     (category) =>
       category.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       category.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (loading) {
+    return (
+      <div className='flex items-center justify-center min-h-screen bg-[#F8F9FA] dark:bg-background-dark'>
+        <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary'></div>
+      </div>
+    );
+  }
 
   return (
     <div className='relative flex min-h-screen w-full flex-col bg-[#F8F9FA] dark:bg-background-dark'>

@@ -30,9 +30,12 @@ export async function hasUserVoted(
   return !!data;
 }
 
-export async function getVoteCounts(
-  categoryId: string
-): Promise<{ nomineeId: string; count: number }[]> {
+export interface VoteCount {
+  nomineeId: string;
+  count: number;
+}
+
+export async function getVoteCounts(categoryId: string): Promise<VoteCount[]> {
   // Option 1: Use .rpc() if we had a stored procedure (better for performance)
   // Option 2: Fetch all votes and count client-side (easier for MVP, ok for small scale)
 
@@ -44,8 +47,10 @@ export async function getVoteCounts(
 
   if (error) throw error;
 
+  const votes = data as unknown as { nominee_id: string }[];
+
   const counts: Record<string, number> = {};
-  data.forEach((vote) => {
+  votes.forEach((vote) => {
     counts[vote.nominee_id] = (counts[vote.nominee_id] || 0) + 1;
   });
 

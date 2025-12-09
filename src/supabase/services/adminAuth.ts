@@ -84,9 +84,8 @@ export async function updateAdminPassword(
   adminId: string,
   newPassword: string
 ): Promise<boolean> {
-  const { error } = await supabase
-    .from('admins')
-    .update({ password: newPassword } as any) // Type cast needed due to inference issue
+  const { error } = await (supabase.from('admins') as any)
+    .update({ password: newPassword })
     .eq('id', adminId);
 
   if (error) {

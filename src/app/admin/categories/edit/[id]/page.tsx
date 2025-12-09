@@ -125,8 +125,7 @@ export default function EditCategoryPage() {
     setSaving(true);
 
     try {
-      const { error } = await supabase
-        .from('categories')
+      const { error } = await (supabase.from('categories') as any)
         .update({
           title,
           description,
@@ -140,7 +139,7 @@ export default function EditCategoryPage() {
           status,
           image: imageUrl,
         })
-        .eq('id', params.id);
+        .eq('id', params.id as string);
 
       if (error) throw error;
 

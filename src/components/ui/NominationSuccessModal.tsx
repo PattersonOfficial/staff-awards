@@ -6,6 +6,8 @@ interface NominationSuccessModalProps {
   staff: Staff | null;
   category: AwardCategory | null;
   onClose: () => void;
+  title?: string;
+  message?: string;
 }
 
 export default function NominationSuccessModal({
@@ -13,6 +15,7 @@ export default function NominationSuccessModal({
   staff,
   category,
   onClose,
+  title = 'Nomination Successful!',
 }: NominationSuccessModalProps) {
   const router = useRouter();
 
@@ -32,7 +35,7 @@ export default function NominationSuccessModal({
         </div>
         <div className='text-center'>
           <h3 className='text-2xl font-bold text-slate-900 dark:text-slate-100'>
-            Nomination Successful!
+            {title}
           </h3>
           <p className='mt-2 text-slate-600 dark:text-slate-400'>
             You have successfully nominated{' '}

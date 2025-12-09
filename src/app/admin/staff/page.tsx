@@ -172,7 +172,7 @@ export default function AdminStaffPage() {
                           </td>
                           <td className='relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6'>
                             <Link
-                              href={`/admin/staff/edit/${staff.id}`}
+                              href={`/admin/staff/${staff.id}/edit`}
                               className='p-1 text-gray-400 hover:text-primary transition-colors'
                               title='Edit'>
                               <span className='material-symbols-outlined text-lg'>
