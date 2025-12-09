@@ -13,7 +13,7 @@ import { Nomination } from '@/types';
 export default function MyNominationsPage() {
   const router = useRouter();
   const { user, loading } = useAuth();
-  
+
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login');
@@ -145,7 +145,7 @@ export default function MyNominationsPage() {
             <div className='flex items-center gap-1 bg-white dark:bg-gray-800 rounded-lg p-1 border border-gray-200 dark:border-gray-700'>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-2 rounded-md transition-colors cursor-pointer ${
+                className={`p-2  pb-0! rounded-md transition-colors cursor-pointer ${
                   viewMode === 'list'
                     ? 'bg-[#0A4D68] text-white'
                     : 'text-[#6c757d] dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -208,7 +208,8 @@ export default function MyNominationsPage() {
                   <div className='flex w-full md:w-auto items-center justify-between gap-4 md:justify-end'>
                     <div className='flex items-center gap-4'>
                       <span className='text-sm text-text-light-secondary dark:text-text-dark-secondary'>
-                        Submitted {new Date(nomination.submittedAt).toLocaleDateString()}
+                        Submitted{' '}
+                        {new Date(nomination.submittedAt).toLocaleDateString()}
                       </span>
                       <span
                         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(

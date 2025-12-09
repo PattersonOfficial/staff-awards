@@ -57,7 +57,7 @@ export default function Home() {
               <div className='flex items-center gap-1 bg-white dark:bg-gray-800 rounded-lg p-1 border border-gray-200 dark:border-gray-700'>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 rounded-md transition-colors cursor-pointer ${
+                  className={`p-2 pb-0! rounded-md transition-colors cursor-pointer ${
                     viewMode === 'list'
                       ? 'bg-[#0A4D68] text-white'
                       : 'text-[#6c757d] dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -67,7 +67,7 @@ export default function Home() {
                 </button>
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-md transition-colors cursor-pointer ${
+                  className={`p-2 pb-0! rounded-md transition-colors cursor-pointer ${
                     viewMode === 'grid'
                       ? 'bg-[#0A4D68] text-white'
                       : 'text-[#6c757d] dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'

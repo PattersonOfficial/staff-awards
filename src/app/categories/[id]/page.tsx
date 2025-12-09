@@ -31,7 +31,7 @@ export default function CategoryPage() {
       try {
         const [catData, staffData] = await Promise.all([
           getCategoryById(params.id as string),
-          getStaff()
+          getStaff(),
         ]);
         setCategory(catData);
         setStaffList(staffData);
@@ -103,7 +103,9 @@ export default function CategoryPage() {
   if (!category) {
     return (
       <div className='min-h-screen flex items-center justify-center bg-background-light dark:bg-background-dark'>
-        <p className='text-text-light-primary dark:text-text-dark-primary'>Category not found</p>
+        <p className='text-text-light-primary dark:text-text-dark-primary'>
+          Category not found
+        </p>
       </div>
     );
   }
@@ -113,7 +115,9 @@ export default function CategoryPage() {
   // We need to handle null avatar
   const mapStaffToCard = (staff: StaffMember) => ({
     ...staff,
-    avatar: staff.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(staff.name)
+    avatar:
+      staff.avatar ||
+      'https://ui-avatars.com/api/?name=' + encodeURIComponent(staff.name),
   });
 
   return (
@@ -147,7 +151,8 @@ export default function CategoryPage() {
                 calendar_today
               </span>
               <p className='text-text-light-secondary dark:text-text-dark-secondary text-sm'>
-                Nominations close: {new Date(category.nomination_deadline).toLocaleDateString()}
+                Nominations close:{' '}
+                {new Date(category.nomination_deadline).toLocaleDateString()}
               </p>
             </div>
           </div>
@@ -162,7 +167,7 @@ export default function CategoryPage() {
               <div className='flex items-center rounded-lg bg-slate-100 dark:bg-slate-800 p-1'>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 rounded-md transition-colors cursor-pointer ${
+                  className={`p-2 pb-0! rounded-md transition-colors cursor-pointer ${
                     viewMode === 'list'
                       ? 'text-white bg-primary'
                       : 'text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700'
@@ -171,7 +176,7 @@ export default function CategoryPage() {
                 </button>
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-md transition-colors cursor-pointer ${
+                  className={`p-2 pb-0! rounded-md transition-colors cursor-pointer ${
                     viewMode === 'grid'
                       ? 'text-white bg-primary'
                       : 'text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700'
@@ -183,7 +188,9 @@ export default function CategoryPage() {
                 onClick={handleNominateClick}
                 className='flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors disabled:bg-slate-300 dark:disabled:bg-slate-600 disabled:cursor-not-allowed'
                 disabled={!selectedStaffId || submitting}>
-                <span className='truncate'>{submitting ? 'Submitting...' : 'Nominate Staff'}</span>
+                <span className='truncate'>
+                  {submitting ? 'Submitting...' : 'Nominate Staff'}
+                </span>
               </button>
             </div>
           </div>
@@ -218,7 +225,13 @@ export default function CategoryPage() {
                   onClick={() => setSelectedStaffId(staff.id)}>
                   <div
                     className='bg-center bg-no-repeat aspect-square bg-cover rounded-full size-16 shrink-0'
-                    style={{ backgroundImage: `url(${staff.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(staff.name)})` }}
+                    style={{
+                      backgroundImage: `url(${
+                        staff.avatar ||
+                        'https://ui-avatars.com/api/?name=' +
+                          encodeURIComponent(staff.name)
+                      })`,
+                    }}
                   />
                   <div className='flex-1 min-w-0'>
                     <h4 className='text-slate-900 dark:text-slate-100 text-base font-bold leading-tight'>
@@ -248,7 +261,11 @@ export default function CategoryPage() {
       <NominationFormModal
         isOpen={isFormModalOpen}
         staff={selectedStaff ? mapStaffToCard(selectedStaff) : null}
-        category={category ? { ...category, nominationDeadline: category.nomination_deadline } : null}
+        category={
+          category
+            ? { ...category, nominationDeadline: category.nomination_deadline }
+            : null
+        }
         onClose={() => setIsFormModalOpen(false)}
         onSubmit={handleNominationSubmit}
       />
@@ -256,7 +273,11 @@ export default function CategoryPage() {
       <NominationSuccessModal
         isOpen={isSuccessModalOpen}
         staff={selectedStaff ? mapStaffToCard(selectedStaff) : null}
-        category={category ? { ...category, nominationDeadline: category.nomination_deadline } : null}
+        category={
+          category
+            ? { ...category, nominationDeadline: category.nomination_deadline }
+            : null
+        }
         onClose={handleSuccessClose}
       />
     </div>
