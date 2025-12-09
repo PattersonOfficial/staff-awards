@@ -64,7 +64,7 @@ export default function AdminDashboardPage() {
           <h1 className='text-3xl font-bold tracking-tight text-gray-900 dark:text-white'>
             Dashboard
           </h1>
-          <p className='text-gray-500 dark:text-gray-400'>
+          <p className='text-text-light-secondary dark:text-text-dark-secondary'>
             Overview of the awards platform activity.
           </p>
         </div>
@@ -73,19 +73,21 @@ export default function AdminDashboardPage() {
         <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4'>
           {/* Nominations Card */}
           <div className='overflow-hidden rounded-xl bg-white dark:bg-gray-800 p-6 shadow-sm ring-1 ring-gray-200 dark:ring-gray-700'>
-            <dt className='truncate text-sm font-medium text-gray-500 dark:text-gray-400'>
+            <dt className='truncate text-sm font-medium text-text-light-secondary dark:text-text-dark-secondary'>
               Total Nominations
             </dt>
             <dd className='mt-2 flex items-baseline gap-2'>
               <span className='text-3xl font-semibold tracking-tight text-gray-900 dark:text-white'>
                 {loading ? '-' : stats.nominations}
               </span>
-              <span className='text-sm text-gray-500'>submissions</span>
+              <span className='text-sm text-text-light-secondary dark:text-text-dark-secondary'>
+                submissions
+              </span>
             </dd>
             <div className='mt-4'>
               <Link
                 href='/admin/nominations'
-                className='text-sm font-medium text-primary hover:text-primary/80'>
+                className='text-sm font-medium text-primary dark:text-blue-400 hover:text-primary/80 dark:hover:text-blue-300'>
                 View all &rarr;
               </Link>
             </div>
@@ -93,19 +95,21 @@ export default function AdminDashboardPage() {
 
           {/* Pending Review Card */}
           <div className='overflow-hidden rounded-xl bg-white dark:bg-gray-800 p-6 shadow-sm ring-1 ring-gray-200 dark:ring-gray-700'>
-            <dt className='truncate text-sm font-medium text-gray-500 dark:text-gray-400'>
+            <dt className='truncate text-sm font-medium text-text-light-secondary dark:text-text-dark-secondary'>
               Pending Review
             </dt>
             <dd className='mt-2 flex items-baseline gap-2'>
               <span className='text-3xl font-semibold tracking-tight text-yellow-600'>
                 {loading ? '-' : stats.pendingNominations}
               </span>
-              <span className='text-sm text-gray-500'>needs action</span>
+              <span className='text-sm text-text-light-secondary dark:text-text-dark-secondary'>
+                needs action
+              </span>
             </dd>
             <div className='mt-4'>
               <Link
                 href='/admin/nominations'
-                className='text-sm font-medium text-primary hover:text-primary/80'>
+                className='text-sm font-medium text-primary dark:text-blue-400 hover:text-primary/80 dark:hover:text-blue-300'>
                 Review now &rarr;
               </Link>
             </div>
@@ -113,7 +117,7 @@ export default function AdminDashboardPage() {
 
           {/* Votes Card */}
           <div className='overflow-hidden rounded-xl bg-white dark:bg-gray-800 p-6 shadow-sm ring-1 ring-gray-200 dark:ring-gray-700'>
-            <dt className='truncate text-sm font-medium text-gray-500 dark:text-gray-400'>
+            <dt className='truncate text-sm font-medium text-text-light-secondary dark:text-text-dark-secondary'>
               Total Votes Cast
             </dt>
             <dd className='mt-2 flex items-baseline gap-2'>
@@ -122,20 +126,26 @@ export default function AdminDashboardPage() {
               </span>
             </dd>
             <div className='mt-4'>
-              <span className='text-sm text-gray-400'>Live counts</span>
+              <span className='text-sm text-text-light-secondary dark:text-text-dark-secondary'>
+                Live counts
+              </span>
             </div>
           </div>
 
           {/* Staff/Categories Summary */}
           <div className='overflow-hidden rounded-xl bg-white dark:bg-gray-800 p-6 shadow-sm ring-1 ring-gray-200 dark:ring-gray-700'>
             <div className='flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-4 mb-4'>
-              <span className='text-sm text-gray-500'>Categories</span>
+              <span className='text-sm text-text-light-secondary dark:text-text-dark-secondary'>
+                Categories
+              </span>
               <span className='font-bold text-gray-900 dark:text-white'>
                 {loading ? '-' : stats.categories}
               </span>
             </div>
             <div className='flex justify-between items-center'>
-              <span className='text-sm text-gray-500'>Staff Members</span>
+              <span className='text-sm text-text-light-secondary dark:text-text-dark-secondary'>
+                Staff Members
+              </span>
               <span className='font-bold text-gray-900 dark:text-white'>
                 {loading ? '-' : stats.staff}
               </span>
@@ -158,7 +168,9 @@ export default function AdminDashboardPage() {
               <h3 className='font-semibold text-gray-900 dark:text-white'>
                 Create Category
               </h3>
-              <p className='text-xs text-gray-500'>Add a new award category</p>
+              <p className='text-xs text-text-light-secondary dark:text-text-dark-secondary'>
+                Add a new award category
+              </p>
             </div>
           </Link>
           <Link
@@ -171,7 +183,9 @@ export default function AdminDashboardPage() {
               <h3 className='font-semibold text-gray-900 dark:text-white'>
                 Add Staff
               </h3>
-              <p className='text-xs text-gray-500'>Onboard a new employee</p>
+              <p className='text-xs text-text-light-secondary dark:text-text-dark-secondary'>
+                Onboard a new employee
+              </p>
             </div>
           </Link>
         </div>

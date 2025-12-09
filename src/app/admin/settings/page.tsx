@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Toast from '@/components/ui/Toast';
 import {
   getAdminSession,
   updateAdminPassword,
 } from '@/supabase/services/adminAuth';
+import { useTheme } from 'next-themes';
 
 type Tab = 'general' | 'security';
 
@@ -14,6 +15,12 @@ export default function SettingsPage() {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Password Change State
   const [showPasswordForm, setShowPasswordForm] = useState(false);
@@ -105,10 +112,10 @@ export default function SettingsPage() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                className={`flex items-center cursor-pointer gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
                   activeTab === tab
                     ? 'bg-primary text-white shadow-sm'
-                    : 'text-text-light-secondary dark:text-text-dark-secondary hover:bg-gray-100 dark:hover:bg-gray-800'
+                    : 'text-text-light-secondary dark:text-text-dark-secondary hover:bg-blue-50 dark:hover:bg-gray-800'
                 }`}>
                 <span className='material-symbols-outlined text-lg'>
                   {tab === 'general' && 'tune'}
@@ -155,10 +162,38 @@ export default function SettingsPage() {
                         Select your preferred color scheme
                       </p>
                     </div>
-                    <div className='flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1'>
-                      <button className='px-3 py-1.5 rounded-md bg-white dark:bg-gray-700 shadow-sm text-xs font-semibold'>
-                        Light
-                      </button>
+                    <div className='flex bg-blue-50 dark:bg-gray-800 rounded-lg p-1 border border-blue-100 dark:border-gray-700'>
+                      {mounted && (
+                        <>
+                          <button
+                            onClick={() => setTheme('light')}
+                            className={`px-3 py-1.5 cursor-pointer rounded-md text-xs font-semibold transition-all ${
+                              theme === 'light'
+                                ? 'bg-white text-gray-900 shadow-sm'
+                                : 'text-text-light-secondary dark:text-text-dark-secondary hover:text-primary'
+                            }`}>
+                            Light
+                          </button>
+                          <button
+                            onClick={() => setTheme('dark')}
+                            className={`px-3 py-1.5 cursor-pointer rounded-md text-xs font-semibold transition-all ${
+                              theme === 'dark'
+                                ? 'bg-gray-700 text-white shadow-sm'
+                                : 'text-text-light-secondary dark:text-text-dark-secondary hover:text-primary'
+                            }`}>
+                            Dark
+                          </button>
+                          <button
+                            onClick={() => setTheme('system')}
+                            className={`px-3 py-1.5 cursor-pointer rounded-md text-xs font-semibold transition-all ${
+                              theme === 'system'
+                                ? 'bg-white dark:bg-gray-700 text-primary shadow-sm'
+                                : 'text-text-light-secondary dark:text-text-dark-secondary hover:text-primary'
+                            }`}>
+                            System
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -175,7 +210,7 @@ export default function SettingsPage() {
                   {!showPasswordForm ? (
                     <button
                       onClick={() => setShowPasswordForm(true)}
-                      className='flex items-center gap-2 rounded-lg border border-border-light dark:border-border-dark px-4 py-2 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors'>
+                      className='flex items-center gap-2 cursor-pointer rounded-lg border border-border-light dark:border-border-dark px-4 py-2 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors'>
                       <span className='material-symbols-outlined text-lg'>
                         key
                       </span>
@@ -232,28 +267,30 @@ export default function SettingsPage() {
               </div>
             )}
 
-            <div className='mt-8 flex justify-end pt-6 border-t border-border-light dark:border-border-dark'>
-              <button
-                onClick={handleSave}
-                disabled={isSaving}
-                className='flex items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-primary/90 disabled:opacity-70 transition-all'>
-                {isSaving ? (
-                  <>
-                    <span className='material-symbols-outlined animate-spin text-lg'>
-                      progress_activity
-                    </span>
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <span className='material-symbols-outlined text-lg'>
-                      save
-                    </span>
-                    Save Changes
-                  </>
-                )}
-              </button>
-            </div>
+            {activeTab === 'security' && (
+              <div className='mt-8 flex justify-end pt-6 border-t border-border-light dark:border-border-dark'>
+                <button
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  className='flex items-center cursor-pointer gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-primary/90 disabled:opacity-70 transition-all'>
+                  {isSaving ? (
+                    <>
+                      <span className='material-symbols-outlined animate-spin text-lg'>
+                        progress_activity
+                      </span>
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <span className='material-symbols-outlined text-lg'>
+                        save
+                      </span>
+                      Save Changes
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

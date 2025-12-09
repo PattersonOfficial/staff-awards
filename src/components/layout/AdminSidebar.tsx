@@ -30,7 +30,8 @@ export default function AdminSidebar() {
     const active = isActive(path);
     const baseClass =
       'flex items-center gap-3 rounded-lg px-3 py-2 transition-colors';
-    const activeClass = 'bg-accent-light dark:bg-accent-dark text-primary';
+    const activeClass =
+      'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-100 font-bold';
     const inactiveClass =
       'text-text-light-secondary dark:text-text-dark-secondary hover:bg-accent-light dark:hover:bg-accent-dark hover:text-text-light-primary dark:hover:text-text-dark-primary';
 
@@ -47,7 +48,7 @@ export default function AdminSidebar() {
         </div>
         <div className='flex flex-col'>
           <h1 className='text-base font-bold text-text-light-primary dark:text-text-dark-primary'>
-            Staff Awards
+            DevOps Awards
           </h1>
           <p className='text-xs font-medium text-text-light-secondary dark:text-text-dark-secondary'>
             Admin Panel

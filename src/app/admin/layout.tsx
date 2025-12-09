@@ -34,7 +34,7 @@ export default function AdminLayout({
 
   if (checking) {
     return (
-      <div className='flex h-screen w-full items-center justify-center bg-[#f6f6f8] dark:bg-background-dark'>
+      <div className='flex h-screen w-full items-center justify-center bg-background dark:bg-background-dark'>
         <div className='h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent'></div>
       </div>
     );
@@ -53,7 +53,7 @@ export default function AdminLayout({
   }
 
   return (
-    <div className='flex h-screen w-full bg-[#f6f6f8] dark:bg-background-dark admin-theme'>
+    <div className='flex h-screen w-full bg-background dark:bg-background-dark admin-theme'>
       <AdminSidebar />
       {children}
     </div>
