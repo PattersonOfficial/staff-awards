@@ -171,10 +171,19 @@ export default function AdminStaffPage() {
                             </span>
                           </td>
                           <td className='relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6'>
+                            <Link
+                              href={`/admin/staff/edit/${staff.id}`}
+                              className='p-1 text-gray-400 hover:text-primary transition-colors'
+                              title='Edit'>
+                              <span className='material-symbols-outlined text-lg'>
+                                edit
+                              </span>
+                            </Link>
                             <button
                               onClick={() => handleDelete(staff.id)}
-                              className='text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors'>
-                              <span className='material-symbols-outlined'>
+                              className='p-1 text-gray-400 hover:text-red-500 transition-colors'
+                              title='Delete'>
+                              <span className='material-symbols-outlined text-lg'>
                                 delete
                               </span>
                             </button>

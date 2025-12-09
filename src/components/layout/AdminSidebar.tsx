@@ -20,7 +20,7 @@ export default function AdminSidebar() {
     e.preventDefault();
     try {
       await signOut();
-      router.push('/login');
+      router.push('/');
     } catch (error) {
       console.error('Error signing out:', error);
     }
@@ -75,7 +75,7 @@ export default function AdminSidebar() {
           <span className='material-symbols-outlined text-xl'>rate_review</span>
           <span className='text-sm font-medium'>Nominations</span>
         </Link>
-        <Link href='/admin/voting' className={getLinkClass('/admin/voting')}>
+        <Link href='/admin/results' className={getLinkClass('/admin/results')}>
           <span className='material-symbols-outlined text-xl'>how_to_vote</span>
           <span className='text-sm font-medium'>Results</span>
         </Link>

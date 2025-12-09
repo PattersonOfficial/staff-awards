@@ -78,4 +78,16 @@ export function getAdminSession() {
 
 export function isAuthenticatedAdmin(): boolean {
   return !!getAdminSession();
+
+export async function updateAdminPassword(adminId: string, newPassword: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('admins')
+    .update({ password: newPassword as any }) // Type cast might be needed if types.ts is strict about password column 
+    .eq('id', adminId);
+
+  if (error) {
+    console.error('Error updating password:', error);
+    return false;
+  }
+  return true;
 }
