@@ -10,14 +10,14 @@ import { AwardCategory } from '@/types';
 
 // Helper to map Supabase Category to AwardCategory
 const mapCategory = (cat: Category): AwardCategory => ({
-  id: cat.id,
-  title: cat.title,
-  description: cat.description || '',
-  image: cat.image || '',
-  type: cat.type,
-  department: cat.department || '',
-  nominationDeadline: cat.nomination_end || cat.nomination_deadline || '',
-  status: cat.status as 'draft' | 'published' | 'closed',
+  id: cat?.id,
+  title: cat?.title,
+  description: cat?.description ?? '',
+  image: cat?.image ?? '',
+  type: cat?.type,
+  department: cat?.department ?? '',
+  nominationDeadline: cat?.nomination_end ?? cat?.nomination_deadline ?? '',
+  status: cat?.status as 'draft' | 'published' | 'closed',
   shortlistingStart: cat.shortlisting_start,
   shortlistingEnd: cat.shortlisting_end,
   votingStart: cat.voting_start,
@@ -277,7 +277,7 @@ export default function ResultsPage() {
                 ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'
                 : 'grid grid-cols-1 gap-8'
             }>
-            {filteredResults.map((result, index) => (
+            {filteredResults.map((result) => (
               <div
                 key={result.categoryId}
                 className='bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg overflow-hidden hover:shadow-xl transition-shadow'>

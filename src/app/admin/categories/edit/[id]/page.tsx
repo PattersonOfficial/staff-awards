@@ -15,9 +15,7 @@ export default function EditCategoryPage() {
   // Form State
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [type, setType] = useState<'Individual Award' | 'Team Award' | string>(
-    'Individual Award'
-  );
+  const [type, setType] = useState('Individual Award');
   const [department, setDepartment] = useState('All Departments');
   const [nominationDeadline, setNominationDeadline] = useState('');
   const [shortlistingStart, setShortlistingStart] = useState('');

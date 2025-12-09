@@ -76,7 +76,7 @@ export interface Database {
           title: string;
           description: string | null;
           image: string | null;
-          type: 'Individual Award' | 'Team Award' | string;
+          type: string;
           department: string | null;
           quantity: number;
           nomination_start: string | null;
@@ -95,7 +95,7 @@ export interface Database {
           title: string;
           description?: string | null;
           image?: string | null;
-          type?: 'Individual Award' | 'Team Award' | string;
+          type?: string;
           department?: string | null;
           quantity?: number;
           nomination_start?: string | null;
@@ -114,7 +114,7 @@ export interface Database {
           title?: string;
           description?: string | null;
           image?: string | null;
-          type?: 'Individual Award' | 'Team Award' | string;
+          type?: string;
           department?: string | null;
           quantity?: number;
           nomination_start?: string | null;

@@ -23,30 +23,30 @@ import { AwardCategory, Staff } from '@/types';
 
 // Helper to map Supabase Category to AwardCategory
 const mapCategory = (cat: SupabaseCategory): AwardCategory => ({
-  id: cat.id,
-  title: cat.title,
-  description: cat.description || '',
-  image: cat.image || '/assets/images/award-placeholder.jpg', // Fallback image if null
-  type: cat.type as 'Individual Award' | 'Team Award',
-  department: cat.department || 'All Departments',
-  nominationDeadline: cat.nomination_end || cat.nomination_deadline || '',
-  status: cat.status as 'draft' | 'published' | 'closed',
-  shortlistingStart: cat.shortlisting_start,
-  shortlistingEnd: cat.shortlisting_end,
-  votingStart: cat.voting_start,
-  votingEnd: cat.voting_end,
+  id: cat?.id,
+  title: cat?.title,
+  description: cat?.description ?? '',
+  image: cat?.image ?? '/assets/images/award-placeholder.jpg', // Fallback image if null
+  type: cat?.type,
+  department: cat?.department ?? 'All Departments',
+  nominationDeadline: cat?.nomination_end ?? cat?.nomination_deadline ?? '',
+  status: cat?.status as 'draft' | 'published' | 'closed',
+  shortlistingStart: cat?.shortlisting_start,
+  shortlistingEnd: cat?.shortlisting_end,
+  votingStart: cat?.voting_start,
+  votingEnd: cat?.voting_end,
 });
 
 // Helper to map Supabase Staff to Staff
 const mapStaff = (s: SupabaseStaff): Staff => ({
-  id: s.id,
-  name: s.name,
-  email: s.email,
-  position: s.position || '',
-  department: s.department || '',
+  id: s?.id,
+  name: s?.name,
+  email: s?.email,
+  position: s?.position ?? '',
+  department: s?.department ?? '',
   avatar:
-    s.avatar ||
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(s.name)}`,
+    s?.avatar ??
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(s?.name ?? 'User')}`,
 });
 
 export default function CategoryPage() {

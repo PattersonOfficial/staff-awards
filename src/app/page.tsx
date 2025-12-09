@@ -13,18 +13,18 @@ import Link from 'next/link';
 
 // Helper to map Supabase Category to AwardCategory
 const mapCategory = (cat: SupabaseCategory): AwardCategory => ({
-  id: cat.id,
-  title: cat.title,
-  description: cat.description || '', // Fallback for description if null (though schema says string?)
-  image: cat.image || '', // Fallback for image
-  type: cat.type,
-  department: cat.department || '', // Fallback for department
-  nominationDeadline: cat.nomination_end || cat.nomination_deadline || '',
-  status: cat.status as 'draft' | 'published' | 'closed',
-  shortlistingStart: cat.shortlisting_start,
-  shortlistingEnd: cat.shortlisting_end,
-  votingStart: cat.voting_start,
-  votingEnd: cat.voting_end,
+  id: cat?.id,
+  title: cat?.title,
+  description: cat?.description ?? '',
+  image: cat?.image ?? '', // Fallback for image
+  type: cat?.type,
+  department: cat?.department ?? '', // Fallback for department
+  nominationDeadline: cat?.nomination_end ?? cat?.nomination_deadline ?? '',
+  status: cat?.status as 'draft' | 'published' | 'closed',
+  shortlistingStart: cat?.shortlisting_start,
+  shortlistingEnd: cat?.shortlisting_end,
+  votingStart: cat?.voting_start,
+  votingEnd: cat?.voting_end,
 });
 
 export default function Home() {

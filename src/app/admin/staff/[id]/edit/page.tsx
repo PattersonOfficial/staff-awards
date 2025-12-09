@@ -215,7 +215,7 @@ export default function EditStaffPage({
                       className='appearance-none block w-full min-w-0 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark focus:border-primary h-12 placeholder:text-gray-400 px-4 text-base font-normal leading-normal'
                       placeholder='e.g., Senior Designer'
                       type='text'
-                      defaultValue={staff.position || ''}
+                      defaultValue={staff?.position ?? ''}
                     />
                   </label>
 
@@ -228,7 +228,7 @@ export default function EditStaffPage({
                       <select
                         name='department'
                         className='appearance-none block w-full min-w-0 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark focus:border-primary h-12 px-4 pr-10 text-base font-normal leading-normal'
-                        defaultValue={staff.department || ''}>
+                        defaultValue={staff?.department ?? ''}>
                         {departments.map((dept) => (
                           <option key={dept} value={dept}>
                             {dept}
