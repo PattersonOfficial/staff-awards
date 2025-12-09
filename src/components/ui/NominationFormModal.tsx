@@ -4,7 +4,7 @@ import { useState } from 'react';
 interface NominationFormModalProps {
   isOpen: boolean;
   staff: Staff | null;
-  category: AwardCategory;
+  category: AwardCategory | null;
   onClose: () => void;
   onSubmit: (reason: string) => void;
 }
@@ -18,7 +18,7 @@ export default function NominationFormModal({
 }: NominationFormModalProps) {
   const [reason, setReason] = useState('');
 
-  if (!isOpen || !staff) return null;
+  if (!isOpen || !staff || !category) return null;
 
   const handleSubmit = () => {
     if (reason.trim()) {

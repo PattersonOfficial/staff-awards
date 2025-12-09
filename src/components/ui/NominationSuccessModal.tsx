@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 interface NominationSuccessModalProps {
   isOpen: boolean;
   staff: Staff | null;
-  category: AwardCategory;
+  category: AwardCategory | null;
   onClose: () => void;
 }
 
@@ -16,7 +16,7 @@ export default function NominationSuccessModal({
 }: NominationSuccessModalProps) {
   const router = useRouter();
 
-  if (!isOpen || !staff) return null;
+  if (!isOpen || !staff || !category) return null;
 
   const handleViewNominations = () => {
     router.push('/my-nominations');

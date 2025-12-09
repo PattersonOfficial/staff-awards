@@ -2,15 +2,15 @@ export interface AwardCategory {
   id: string;
   title: string;
   description: string;
-  image: string;
+  image: string | null;
   type: 'Individual Award' | 'Team Award';
-  department?: string;
+  department?: string | null;
   nominationDeadline: string;
   status: 'draft' | 'published' | 'closed';
-  shortlistingStart?: string;
-  shortlistingEnd?: string;
-  votingStart?: string;
-  votingEnd?: string;
+  shortlistingStart?: string | null;
+  shortlistingEnd?: string | null;
+  votingStart?: string | null;
+  votingEnd?: string | null;
 }
 
 export interface Staff {
