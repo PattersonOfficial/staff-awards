@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/supabase/hooks/useAuth';
+import { useEffect, useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import { isAuthenticatedAdmin } from '@/supabase/services/adminAuth';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 
 export default function AdminLayout({
@@ -11,19 +11,28 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { user, isAdmin, loading } = useAuth();
+  const pathname = usePathname();
+  const [authorized, setAuthorized] = useState(false);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        router.push('/admin/login');
-      } else if (!isAdmin) {
-        router.push('/');
-      }
+    // Skip check for login page to avoid redirect loop
+    if (pathname === '/admin/login') {
+      setAuthorized(true);
+      setChecking(false);
+      return;
     }
-  }, [user, isAdmin, loading, router]);
 
-  if (loading) {
+    const isAuth = isAuthenticatedAdmin();
+    if (!isAuth) {
+      router.push('/admin/login');
+    } else {
+      setAuthorized(true);
+    }
+    setChecking(false);
+  }, [pathname, router]);
+
+  if (checking) {
     return (
       <div className='flex h-screen w-full items-center justify-center bg-[#f6f6f8] dark:bg-background-dark'>
         <div className='h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent'></div>
@@ -31,7 +40,15 @@ export default function AdminLayout({
     );
   }
 
-  if (!user || !isAdmin) {
+  // If on login page, render children without sidebar structure (usually)
+  // But layout wraps everything. We might want to render sidebar only if authorized and NOT on login page.
+  // However, the login page is typically outside this layout if it was /login, but here it is /admin/login.
+  // Let's check pathname.
+  if (pathname === '/admin/login') {
+    return <>{children}</>;
+  }
+
+  if (!authorized) {
     return null;
   }
 

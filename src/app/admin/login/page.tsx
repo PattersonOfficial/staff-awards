@@ -2,11 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/supabase/hooks/useAuth';
+import { signInAdmin } from '@/supabase/services/adminAuth';
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -18,10 +17,14 @@ export default function AdminLoginPage() {
     setError(null);
 
     try {
-      await signIn(email, password);
-      router.push('/admin');
+      const success = await signInAdmin(email, password);
+      if (success) {
+        router.push('/admin');
+      } else {
+        setError('Invalid email or password');
+      }
     } catch (err) {
-      setError('Invalid email or password');
+      setError('An error occurred during login');
       console.error(err);
     } finally {
       setLoading(false);
@@ -29,19 +32,14 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className='flex min-h-screen flex-col items-center justify-center bg-background-light dark:bg-background-dark p-4'>
-      <div className='w-full max-w-md space-y-8 rounded-xl bg-card-light dark:bg-card-dark p-8 shadow-lg border border-border-light dark:border-border-dark'>
+    <div className='flex min-h-screen flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 p-4'>
+      <div className='w-full max-w-md space-y-8 rounded-xl bg-white dark:bg-gray-800 p-8 shadow-lg border border-gray-200 dark:border-gray-700'>
         <div className='text-center'>
-          <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-white'>
-            <span className='material-symbols-outlined text-2xl'>
-              admin_panel_settings
-            </span>
-          </div>
-          <h1 className='text-3xl font-bold text-text-light-primary dark:text-text-dark-primary'>
+          <h1 className='text-3xl font-bold text-gray-900 dark:text-white'>
             Admin Login
           </h1>
-          <p className='mt-2 text-text-light-secondary dark:text-text-dark-secondary'>
-            Sign in to access the administration panel
+          <p className='mt-2 text-gray-600 dark:text-gray-400'>
+            Sign in to manage the Staff Awards
           </p>
         </div>
 
@@ -56,8 +54,8 @@ export default function AdminLoginPage() {
             <div>
               <label
                 htmlFor='email'
-                className='block text-sm font-medium text-text-light-secondary dark:text-text-dark-secondary'>
-                Email address
+                className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
+                Email Address
               </label>
               <input
                 id='email'
@@ -67,14 +65,14 @@ export default function AdminLoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className='mt-1 block w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-3 py-2 text-text-light-primary dark:text-text-dark-primary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm'
+                className='mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm'
               />
             </div>
 
             <div>
               <label
                 htmlFor='password'
-                className='block text-sm font-medium text-text-light-secondary dark:text-text-dark-secondary'>
+                className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
                 Password
               </label>
               <input
@@ -85,7 +83,7 @@ export default function AdminLoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className='mt-1 block w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark px-3 py-2 text-text-light-primary dark:text-text-dark-primary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm'
+                className='mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm'
               />
             </div>
           </div>
@@ -93,12 +91,8 @@ export default function AdminLoginPage() {
           <button
             type='submit'
             disabled={loading}
-            className='flex w-full items-center justify-center rounded-lg bg-primary px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-gray-900'>
-            {loading ? (
-              <span className='h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent' />
-            ) : (
-              'Sign In'
-            )}
+            className='flex w-full justify-center rounded-md border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors bg-[#0A4D68]'>
+            {loading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
       </div>
