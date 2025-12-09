@@ -2,22 +2,59 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Header from '@/components/layout/Header';
 import StaffCard from '@/components/ui/StaffCard';
 import SearchBar from '@/components/ui/SearchBar';
 import NominationFormModal from '@/components/ui/NominationFormModal';
 import NominationSuccessModal from '@/components/ui/NominationSuccessModal';
-import { getCategoryById, Category } from '@/supabase/services/categories';
-import { getStaff, StaffMember } from '@/supabase/services/staff';
+import {
+  getCategoryById,
+  Category as SupabaseCategory,
+} from '@/supabase/services/categories';
+import {
+  getStaff,
+  StaffMember as SupabaseStaff,
+} from '@/supabase/services/staff';
 import { castVote } from '@/supabase/services/votes';
 import { useAuth } from '@/supabase/hooks/useAuth';
+import { mockCategories, mockStaff } from '@/data/mockData';
+import { AwardCategory, Staff } from '@/types';
+
+// Helper to map Supabase Category to AwardCategory
+const mapCategory = (cat: SupabaseCategory): AwardCategory => ({
+  id: cat.id,
+  title: cat.title,
+  description: cat.description,
+  image: cat.image,
+  type: cat.type as 'Individual Award' | 'Team Award',
+  department: cat.department,
+  nominationDeadline: cat.nomination_deadline, // Map snake_case to camelCase
+  status: cat.status as 'draft' | 'published' | 'closed',
+  shortlistingStart: cat.shortlisting_start,
+  shortlistingEnd: cat.shortlisting_end,
+  votingStart: cat.voting_start,
+  votingEnd: cat.voting_end,
+});
+
+// Helper to map Supabase Staff to Staff (mostly compatible, but good to be explicit)
+const mapStaff = (s: SupabaseStaff): Staff => ({
+  id: s.id,
+  name: s.name,
+  email: s.email,
+  position: s.position,
+  department: s.department,
+  avatar:
+    s.avatar ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(s.name)}`,
+});
 
 export default function CategoryPage() {
   const params = useParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const [category, setCategory] = useState<Category | null>(null);
-  const [staffList, setStaffList] = useState<StaffMember[]>([]);
+  const [category, setCategory] = useState<AwardCategory | null>(null);
+  const [staffList, setStaffList] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
@@ -28,19 +65,64 @@ export default function CategoryPage() {
 
   useEffect(() => {
     async function fetchData() {
+      const categoryId = params.id as string;
+      let fetchedCategory: AwardCategory | null = null;
+      let fetchedStaff: Staff[] = [];
+
       try {
-        const [catData, staffData] = await Promise.all([
-          getCategoryById(params.id as string),
-          getStaff(),
-        ]);
-        setCategory(catData);
-        setStaffList(staffData);
+        // 1. Try fetching Category from Supabase
+        try {
+          // Basic check if it's a valid UUID (simple regex or let Supabase fail)
+          // If it's a short integer ID (like '1', '2'), getCategoryById might fail or return nothing if column type matches but value doesn't.
+          // However, if the column is UUID, sending '1' will throw an error.
+          const catData = await getCategoryById(categoryId);
+          if (catData) {
+            fetchedCategory = mapCategory(catData);
+          }
+        } catch (err) {
+          console.log(
+            'Supabase category fetch failed, falling back to mock data',
+            err
+          );
+        }
+
+        // 2. Fallback to Mock Data if not found in Supabase
+        if (!fetchedCategory) {
+          const mockCat = mockCategories.find((c) => c.id === categoryId);
+          if (mockCat) {
+            fetchedCategory = mockCat;
+          }
+        }
+
+        setCategory(fetchedCategory);
+
+        // 3. Fetch Staff
+        try {
+          const staffData = await getStaff();
+          if (staffData && staffData.length > 0) {
+            fetchedStaff = staffData.map(mapStaff);
+          }
+        } catch (err) {
+          console.log(
+            'Supabase staff fetch failed, falling back to mock data',
+            err
+          );
+        }
+
+        // 4. Fallback/Supplement with Mock Staff if Supabase is empty or failed
+        // For this demo, let's prefer Supabase if available, otherwise mock.
+        if (fetchedStaff.length === 0) {
+          fetchedStaff = mockStaff;
+        }
+
+        setStaffList(fetchedStaff);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
     }
+
     if (params.id) {
       fetchData();
     }
@@ -57,6 +139,8 @@ export default function CategoryPage() {
 
   const handleNominateClick = () => {
     if (!user) {
+      // If using mock data/no auth setup fully, we might want to allow nomination or prompt login.
+      // For now, mirroring original behavior.
       router.push('/login');
       return;
     }
@@ -72,11 +156,28 @@ export default function CategoryPage() {
       setSubmitting(true);
       // We are using castVote which uses upsert to allow replacing votes.
       // Note: The 'reason' is currently not stored in the votes table as it doesn't have a column for it.
-      await castVote({
-        voter_id: user.id,
-        category_id: category.id,
-        nominee_id: selectedStaffId,
-      });
+
+      // We only try to save to DB if it looks like a real DB category (UUID)
+      // If it's mock data (simple ID '1'), we just pretend success.
+      const isMockCategory = category.id.length < 10; // Simple heuristic for now
+
+      if (!isMockCategory) {
+        await castVote({
+          voter_id: user.id,
+          category_id: category.id,
+          nominee_id: selectedStaffId,
+        });
+      } else {
+        // Simulate API delay for mock
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        console.log('Mock vote cast:', {
+          voter: user.id,
+          category: category.id,
+          nominee: selectedStaffId,
+          reason,
+        });
+      }
+
       setIsFormModalOpen(false);
       setIsSuccessModalOpen(true);
     } catch (error) {
@@ -103,22 +204,19 @@ export default function CategoryPage() {
   if (!category) {
     return (
       <div className='min-h-screen flex items-center justify-center bg-background-light dark:bg-background-dark'>
-        <p className='text-text-light-primary dark:text-text-dark-primary'>
-          Category not found
-        </p>
+        <div className='text-center'>
+          <h2 className='text-2xl font-bold text-text-light-primary dark:text-text-dark-primary mb-2'>
+            Category Not Found
+          </h2>
+          <button
+            onClick={() => router.push('/')}
+            className='text-primary hover:underline'>
+            Return to Categories
+          </button>
+        </div>
       </div>
     );
   }
-
-  // Helper to map StaffMember to the interface expected by StaffCard (if different)
-  // StaffMember has same fields as Staff interface: id, name, position, department, avatar (nullable vs string)
-  // We need to handle null avatar
-  const mapStaffToCard = (staff: StaffMember) => ({
-    ...staff,
-    avatar:
-      staff.avatar ||
-      'https://ui-avatars.com/api/?name=' + encodeURIComponent(staff.name),
-  });
 
   return (
     <div className='relative flex min-h-screen w-full flex-col bg-background-light dark:bg-background-dark'>
@@ -126,11 +224,11 @@ export default function CategoryPage() {
       <main className='w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12'>
         <div className='flex flex-col gap-8'>
           <div className='flex flex-wrap gap-2'>
-            <a
+            <Link
               className='text-text-light-secondary dark:text-text-dark-secondary hover:text-primary dark:hover:text-white text-base font-medium leading-normal'
               href='/'>
               All Categories
-            </a>
+            </Link>
             <span className='text-text-light-secondary dark:text-text-dark-secondary text-base font-medium leading-normal'>
               /
             </span>
@@ -152,7 +250,9 @@ export default function CategoryPage() {
               </span>
               <p className='text-text-light-secondary dark:text-text-dark-secondary text-sm'>
                 Nominations close:{' '}
-                {new Date(category.nomination_deadline).toLocaleDateString()}
+                {/* Check if it's a valid date string or needs parsing */}
+                {/* Mock data might use "25 Dec", DB uses ISO. Display as is if simple string, or format if ISO. */}
+                {category.nominationDeadline}
               </p>
             </div>
           </div>
@@ -206,7 +306,7 @@ export default function CategoryPage() {
               {filteredStaff.map((staff) => (
                 <StaffCard
                   key={staff.id}
-                  staff={mapStaffToCard(staff)}
+                  staff={staff}
                   selected={selectedStaffId === staff.id}
                   onClick={() => setSelectedStaffId(staff.id)}
                 />
@@ -226,11 +326,7 @@ export default function CategoryPage() {
                   <div
                     className='bg-center bg-no-repeat aspect-square bg-cover rounded-full size-16 shrink-0'
                     style={{
-                      backgroundImage: `url(${
-                        staff.avatar ||
-                        'https://ui-avatars.com/api/?name=' +
-                          encodeURIComponent(staff.name)
-                      })`,
+                      backgroundImage: `url(${staff.avatar})`,
                     }}
                   />
                   <div className='flex-1 min-w-0'>
@@ -260,24 +356,16 @@ export default function CategoryPage() {
 
       <NominationFormModal
         isOpen={isFormModalOpen}
-        staff={selectedStaff ? mapStaffToCard(selectedStaff) : null}
-        category={
-          category
-            ? { ...category, nominationDeadline: category.nomination_deadline }
-            : null
-        }
+        staff={selectedStaff ? selectedStaff : null}
+        category={category}
         onClose={() => setIsFormModalOpen(false)}
         onSubmit={handleNominationSubmit}
       />
 
       <NominationSuccessModal
         isOpen={isSuccessModalOpen}
-        staff={selectedStaff ? mapStaffToCard(selectedStaff) : null}
-        category={
-          category
-            ? { ...category, nominationDeadline: category.nomination_deadline }
-            : null
-        }
+        staff={selectedStaff ? selectedStaff : null}
+        category={category}
         onClose={handleSuccessClose}
       />
     </div>

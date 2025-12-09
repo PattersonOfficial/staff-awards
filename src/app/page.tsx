@@ -24,7 +24,7 @@ export default function Home() {
         <div className='w-full max-w-7xl'>
           <div className='mb-8'>
             <h1 className='text-4xl font-black tracking-tighter text-[#212529] dark:text-text-dark-primary'>
-              2024 Staff Awards
+              2025 Staff Awards
             </h1>
             <p className='mt-2 text-lg text-[#6c757d] dark:text-text-dark-secondary'>
               Select a category below to nominate a colleague.

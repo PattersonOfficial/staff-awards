@@ -127,7 +127,7 @@ export default function ResultsPage() {
               </span>
             </div>
             <h1 className='text-4xl font-black tracking-tighter text-[#212529] dark:text-text-dark-primary'>
-              2024 Awards Results
+              2025 Awards Results
             </h1>
             <p className='mt-2 text-lg text-[#6c757d] dark:text-text-dark-secondary'>
               Congratulations to all our winners and nominees!

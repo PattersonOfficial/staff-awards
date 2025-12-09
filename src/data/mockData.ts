@@ -298,7 +298,7 @@ export const mockNominations: Nomination[] = [
     category: mockCategories[0],
     reason:
       'Sarah has consistently delivered innovative design solutions that have significantly improved our user experience. Her creative approach to problem-solving has set new standards for our design team.',
-    submittedAt: '2024-12-01T10:30:00Z',
+    submittedAt: '2025-12-01T10:30:00Z',
     status: 'pending',
   },
   {
@@ -311,7 +311,7 @@ export const mockNominations: Nomination[] = [
     category: mockCategories[3],
     reason:
       'James has shown exceptional leadership in driving our sales team to exceed targets consistently. His mentorship has helped junior team members grow significantly.',
-    submittedAt: '2024-11-28T14:20:00Z',
+    submittedAt: '2025-11-28T14:20:00Z',
     status: 'approved',
   },
   {
@@ -324,7 +324,7 @@ export const mockNominations: Nomination[] = [
     category: mockCategories[6],
     reason:
       'Emily has led multiple successful marketing campaigns that have increased our brand visibility by 150%. Her strategic thinking is outstanding.',
-    submittedAt: '2024-12-02T09:15:00Z',
+    submittedAt: '2025-12-02T09:15:00Z',
     status: 'approved',
   },
   {
@@ -337,7 +337,7 @@ export const mockNominations: Nomination[] = [
     category: mockCategories[5],
     reason:
       'Michael has been instrumental in modernizing our tech stack. His contributions to our frontend architecture have improved performance dramatically.',
-    submittedAt: '2024-11-30T16:45:00Z',
+    submittedAt: '2025-11-30T16:45:00Z',
     status: 'shortlisted',
   },
   {
@@ -350,7 +350,7 @@ export const mockNominations: Nomination[] = [
     category: mockCategories[2],
     reason:
       'Ava consistently goes above and beyond in supporting our customers. Her response time and problem resolution rate are exceptional.',
-    submittedAt: '2024-12-03T11:20:00Z',
+    submittedAt: '2025-12-03T11:20:00Z',
     status: 'pending',
   },
   {
@@ -363,7 +363,7 @@ export const mockNominations: Nomination[] = [
     category: mockCategories[8],
     reason:
       'Ryan has an incredible ability to break down complex problems into manageable solutions. His analytical skills have saved us countless hours.',
-    submittedAt: '2024-11-29T13:30:00Z',
+    submittedAt: '2025-11-29T13:30:00Z',
     status: 'approved',
   },
   {
@@ -376,7 +376,7 @@ export const mockNominations: Nomination[] = [
     category: mockCategories[1],
     reason:
       'Mia is always willing to help team members and shares her knowledge generously. She embodies what it means to be a team player.',
-    submittedAt: '2024-12-01T15:10:00Z',
+    submittedAt: '2025-12-01T15:10:00Z',
     status: 'pending',
   },
   {
@@ -389,7 +389,7 @@ export const mockNominations: Nomination[] = [
     category: mockCategories[4],
     reason:
       'Lucas joined us just a year ago and has already made significant contributions to our mobile development efforts. His potential is unlimited.',
-    submittedAt: '2024-12-04T08:50:00Z',
+    submittedAt: '2025-12-04T08:50:00Z',
     status: 'shortlisted',
   },
   {
@@ -402,7 +402,7 @@ export const mockNominations: Nomination[] = [
     category: mockCategories[9],
     reason:
       'Jessica has mentored over 10 new hires this year, helping them integrate smoothly into our company culture. Her guidance has been invaluable.',
-    submittedAt: '2024-11-27T10:00:00Z',
+    submittedAt: '2025-11-27T10:00:00Z',
     status: 'approved',
   },
   {
@@ -415,7 +415,7 @@ export const mockNominations: Nomination[] = [
     category: mockCategories[5],
     reason:
       'Ethan has automated many of our deployment processes, reducing deployment time by 70%. His DevOps expertise is world-class.',
-    submittedAt: '2024-12-02T14:25:00Z',
+    submittedAt: '2025-12-02T14:25:00Z',
     status: 'pending',
   },
   {
@@ -428,7 +428,7 @@ export const mockNominations: Nomination[] = [
     category: mockCategories[3],
     reason:
       'William has transformed our operations department through process improvements that have increased efficiency by 40%.',
-    submittedAt: '2024-12-01T12:40:00Z',
+    submittedAt: '2025-12-01T12:40:00Z',
     status: 'rejected',
   },
   {
@@ -441,7 +441,7 @@ export const mockNominations: Nomination[] = [
     category: mockCategories[6],
     reason:
       'Isabella creates compelling content that resonates with our audience. Her blog posts have increased engagement by 200%.',
-    submittedAt: '2024-11-26T09:30:00Z',
+    submittedAt: '2025-11-26T09:30:00Z',
     status: 'approved',
   },
 ];
