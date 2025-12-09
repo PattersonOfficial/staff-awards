@@ -333,15 +333,14 @@ export default function MyNominationsPage() {
 
       <CancelNominationModal
         isOpen={isCancelModalOpen}
-        onClose={() => setIsCancelModalOpen(false)}
-        onConfirm={() =>
-          nominationToCancel && handleConfirmCancel(nominationToCancel.id)
-        }
+        nominationId={nominationToCancel?.id || ''}
         nomineeName={nominationToCancel?.name || ''}
+        onCancel={() => setIsCancelModalOpen(false)}
+        onConfirm={handleConfirmCancel}
       />
 
       <Toast
-        show={showToast}
+        isVisible={showToast}
         message={toastMessage}
         onClose={() => setShowToast(false)}
       />
