@@ -12,41 +12,6 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
-      staff: {
-        Row: {
-          id: string;
-          name: string;
-          email: string;
-          position: string;
-          department: string;
-          avatar: string | null;
-          role: 'staff' | 'admin';
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          name: string;
-          email: string;
-          position: string;
-          department: string;
-          avatar?: string | null;
-          role?: 'staff' | 'admin';
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          name?: string;
-          email?: string;
-          position?: string;
-          department?: string;
-          avatar?: string | null;
-          role?: 'staff' | 'admin';
-          created_at?: string;
-          updated_at?: string;
-        };
-      };
       admins: {
         Row: {
           id: string;
@@ -70,52 +35,96 @@ export interface Database {
           updated_at?: string;
         };
       };
+      staff: {
+        Row: {
+          id: string;
+          name: string;
+          email: string;
+          department: string | null;
+          position: string | null;
+          avatar: string | null;
+          role: string; // 'staff' | 'admin'
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          email: string;
+          department?: string | null;
+          position?: string | null;
+          avatar?: string | null;
+          role?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          email?: string;
+          department?: string | null;
+          position?: string | null;
+          avatar?: string | null;
+          role?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
       categories: {
         Row: {
           id: string;
           title: string;
-          description: string;
+          description: string | null;
           image: string | null;
-          type: 'Individual Award' | 'Team Award';
+          type: 'Individual Award' | 'Team Award' | string;
           department: string | null;
-          nomination_deadline: string;
-          status: 'draft' | 'published' | 'closed';
-          shortlisting_start: string | null;
-          shortlisting_end: string | null;
+          quantity: number;
+          nomination_start: string | null;
+          nomination_end: string | null;
           voting_start: string | null;
           voting_end: string | null;
+          nomination_deadline: string | null; // Legacy/Compat
+          status: 'draft' | 'published' | 'closed' | string;
+          shortlisting_start: string | null;
+          shortlisting_end: string | null;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id?: string;
           title: string;
-          description: string;
+          description?: string | null;
           image?: string | null;
-          type: 'Individual Award' | 'Team Award';
+          type?: 'Individual Award' | 'Team Award' | string;
           department?: string | null;
-          nomination_deadline: string;
-          status?: 'draft' | 'published' | 'closed';
-          shortlisting_start?: string | null;
-          shortlisting_end?: string | null;
+          quantity?: number;
+          nomination_start?: string | null;
+          nomination_end?: string | null;
           voting_start?: string | null;
           voting_end?: string | null;
+          nomination_deadline?: string | null;
+          status?: 'draft' | 'published' | 'closed' | string;
+          shortlisting_start?: string | null;
+          shortlisting_end?: string | null;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           id?: string;
           title?: string;
-          description?: string;
+          description?: string | null;
           image?: string | null;
-          type?: 'Individual Award' | 'Team Award';
+          type?: 'Individual Award' | 'Team Award' | string;
           department?: string | null;
-          nomination_deadline?: string;
-          status?: 'draft' | 'published' | 'closed';
-          shortlisting_start?: string | null;
-          shortlisting_end?: string | null;
+          quantity?: number;
+          nomination_start?: string | null;
+          nomination_end?: string | null;
           voting_start?: string | null;
           voting_end?: string | null;
+          nomination_deadline?: string | null;
+          status?: 'draft' | 'published' | 'closed' | string;
+          shortlisting_start?: string | null;
+          shortlisting_end?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -123,33 +132,33 @@ export interface Database {
       nominations: {
         Row: {
           id: string;
-          nominee_id: string;
-          nominator_id: string;
           category_id: string;
-          reason: string;
-          status: 'pending' | 'approved' | 'rejected' | 'shortlisted';
+          nominator_id: string | null;
+          nominee_id: string;
+          reason: string | null;
+          status: 'pending' | 'approved' | 'rejected' | 'shortlisted' | string;
           submitted_at: string;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id?: string;
-          nominee_id: string;
-          nominator_id: string;
           category_id: string;
-          reason: string;
-          status?: 'pending' | 'approved' | 'rejected' | 'shortlisted';
+          nominator_id?: string | null;
+          nominee_id: string;
+          reason?: string | null;
+          status?: 'pending' | 'approved' | 'rejected' | 'shortlisted' | string;
           submitted_at?: string;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           id?: string;
-          nominee_id?: string;
-          nominator_id?: string;
           category_id?: string;
-          reason?: string;
-          status?: 'pending' | 'approved' | 'rejected' | 'shortlisted';
+          nominator_id?: string | null;
+          nominee_id?: string;
+          reason?: string | null;
+          status?: 'pending' | 'approved' | 'rejected' | 'shortlisted' | string;
           submitted_at?: string;
           created_at?: string;
           updated_at?: string;
@@ -158,24 +167,24 @@ export interface Database {
       votes: {
         Row: {
           id: string;
-          voter_id: string;
           category_id: string;
+          voter_id: string | null;
           nominee_id: string;
           voted_at: string;
           created_at: string;
         };
         Insert: {
           id?: string;
-          voter_id: string;
           category_id: string;
+          voter_id?: string | null;
           nominee_id: string;
           voted_at?: string;
           created_at?: string;
         };
         Update: {
           id?: string;
-          voter_id?: string;
           category_id?: string;
+          voter_id?: string | null;
           nominee_id?: string;
           voted_at?: string;
           created_at?: string;

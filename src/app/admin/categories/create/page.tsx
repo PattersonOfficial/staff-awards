@@ -1,11 +1,92 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/supabase/client';
+import { createCategory } from '@/supabase/services/categories';
 
 export default function CreateCategoryPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    department: '',
+    nominationStart: '',
+    nominationEnd: '',
+    votingStart: '',
+    votingEnd: '',
+  });
+  const [file, setFile] = useState<File | null>(null);
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      let imageUrl = null;
+
+      if (file) {
+        // Upload image to Supabase Storage
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('category-images')
+          .upload(filePath, file);
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        const { data } = supabase.storage
+          .from('category-images')
+          .getPublicUrl(filePath);
+
+        imageUrl = data.publicUrl;
+      }
+
+      await createCategory({
+        title: formData.title,
+        description: formData.description,
+        image: imageUrl,
+        department: formData.department || null,
+        type: 'Individual Award', // Default for now
+        status: 'draft',
+        nomination_deadline: formData.nominationEnd, // Backward compat
+        shortlisting_start: null, // Not in form yet
+        shortlisting_end: null, // Not in form yet
+        voting_start: formData.votingStart || null,
+        voting_end: formData.votingEnd || null,
+      });
+
+      router.push('/admin/categories');
+    } catch (error) {
+      console.error('Error creating category:', error);
+      alert('Failed to create category. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <main className='flex flex-1 flex-col overflow-y-auto bg-background-light dark:bg-background-dark'>
-      <div className='flex-1 p-8'>
+    <main className='flex-1 p-6 lg:p-10'>
+      <div className='mx-auto max-w-4xl'>
         {/* Breadcrumbs */}
         <div className='flex flex-wrap items-center gap-2 mb-6'>
           <Link
@@ -38,7 +119,7 @@ export default function CreateCategoryPage() {
 
         {/* Form Container */}
         <div className='bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 md:p-8'>
-          <form className='space-y-8' onSubmit={(e) => e.preventDefault()}>
+          <form className='space-y-8' onSubmit={handleSubmit}>
             {/* Section 1: Category Details */}
             <div>
               <h3 className='text-gray-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] pb-4 border-b border-gray-200 dark:border-gray-800'>
@@ -51,6 +132,10 @@ export default function CreateCategoryPage() {
                     Category Name
                   </p>
                   <input
+                    required
+                    name='title'
+                    value={formData.title}
+                    onChange={handleInputChange}
                     className='appearance-none block w-full min-w-0 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark focus:border-primary h-12 placeholder:text-gray-400 px-4 text-base font-normal leading-normal'
                     placeholder='e.g., Innovator of the Year'
                   />
@@ -62,6 +147,10 @@ export default function CreateCategoryPage() {
                     Description
                   </p>
                   <textarea
+                    required
+                    name='description'
+                    value={formData.description}
+                    onChange={handleInputChange}
                     className='appearance-none block w-full min-w-0 resize-y overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark focus:border-primary h-28 placeholder:text-gray-400 p-4 text-base font-normal leading-normal'
                     placeholder='Describe what this award recognizes...'></textarea>
                 </label>
@@ -78,14 +167,16 @@ export default function CreateCategoryPage() {
                       </span>
                       <div className='mt-4 flex text-sm leading-6 text-gray-600 dark:text-gray-300 justify-center'>
                         <label className='relative cursor-pointer rounded-md font-semibold text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 dark:focus-within:ring-offset-background-dark hover:text-primary/80'>
-                          <span>Upload a file</span>
+                          <span>{file ? file.name : 'Upload a file'}</span>
                           <input
                             className='sr-only'
                             name='file-upload'
                             type='file'
+                            accept='image/*'
+                            onChange={handleFileChange}
                           />
                         </label>
-                        <p className='pl-1'>or drag and drop</p>
+                        {!file && <p className='pl-1'>or drag and drop</p>}
                       </div>
                       <p className='text-xs leading-5 text-gray-500 dark:text-gray-400'>
                         PNG, JPG, GIF up to 10MB
@@ -112,6 +203,9 @@ export default function CreateCategoryPage() {
                       Start Date & Time
                     </p>
                     <input
+                      name='nominationStart'
+                      value={formData.nominationStart}
+                      onChange={handleInputChange}
                       className='appearance-none block w-full min-w-0 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark focus:border-primary h-12 px-4 text-base font-normal leading-normal'
                       type='datetime-local'
                     />
@@ -121,6 +215,10 @@ export default function CreateCategoryPage() {
                       End Date & Time
                     </p>
                     <input
+                      required
+                      name='nominationEnd'
+                      value={formData.nominationEnd}
+                      onChange={handleInputChange}
                       className='appearance-none block w-full min-w-0 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark focus:border-primary h-12 px-4 text-base font-normal leading-normal'
                       type='datetime-local'
                     />
@@ -136,6 +234,9 @@ export default function CreateCategoryPage() {
                       Start Date & Time
                     </p>
                     <input
+                      name='votingStart'
+                      value={formData.votingStart}
+                      onChange={handleInputChange}
                       className='appearance-none block w-full min-w-0 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark focus:border-primary h-12 px-4 text-base font-normal leading-normal'
                       type='datetime-local'
                     />
@@ -145,53 +246,13 @@ export default function CreateCategoryPage() {
                       End Date & Time
                     </p>
                     <input
-                      className='appearance-none block w-full min-w-0 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:border-primary h-12 px-4 text-base font-normal leading-normal'
+                      name='votingEnd'
+                      value={formData.votingEnd}
+                      onChange={handleInputChange}
+                      className='appearance-none block w-full min-w-0 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark focus:border-primary h-12 px-4 text-base font-normal leading-normal'
                       type='datetime-local'
                     />
                   </label>
-                </div>
-              </div>
-            </div>
-
-            {/* Section 3: Eligibility */}
-            <div>
-              <h3 className='text-gray-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] pb-4 border-b border-gray-200 dark:border-gray-800'>
-                Eligibility
-              </h3>
-              <div className='grid grid-cols-1 gap-6 mt-6'>
-                <label className='flex flex-col'>
-                  <p className='text-gray-800 dark:text-gray-200 text-base font-medium leading-normal pb-2'>
-                    Eligible Staff
-                  </p>
-                  <div className='relative'>
-                    <span className='material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400'>
-                      search
-                    </span>
-                    <input
-                      className='appearance-none block w-full min-w-0 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark focus:border-primary h-12 placeholder:text-gray-400 pl-10 pr-4 text-base font-normal leading-normal'
-                      placeholder='Search by name or department...'
-                    />
-                  </div>
-                </label>
-                <div className='flex flex-wrap gap-2 p-3 min-h-[48px] rounded-lg bg-background-light dark:bg-background-dark border border-gray-200 dark:border-gray-800'>
-                  <span className='inline-flex items-center gap-x-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-sm font-medium text-primary'>
-                    Jane Doe
-                    <button className='flex-shrink-0 size-4 inline-flex items-center justify-center rounded-full hover:bg-primary/20 focus:outline-none focus:bg-primary/30'>
-                      <span className='sr-only'>Remove Jane Doe</span>
-                      <span className='material-symbols-outlined text-sm'>
-                        close
-                      </span>
-                    </button>
-                  </span>
-                  <span className='inline-flex items-center gap-x-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-sm font-medium text-primary'>
-                    John Smith
-                    <button className='shrink-0 size-4 inline-flex items-center justify-center rounded-full hover:bg-primary/20 focus:outline-none focus:bg-primary/30'>
-                      <span className='sr-only'>Remove John Smith</span>
-                      <span className='material-symbols-outlined text-sm'>
-                        close
-                      </span>
-                    </button>
-                  </span>
                 </div>
               </div>
             </div>
@@ -204,9 +265,12 @@ export default function CreateCategoryPage() {
                 <span className='truncate'>Cancel</span>
               </Link>
               <button
-                className='flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-11 px-6 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] shadow-sm hover:bg-primary/90'
+                disabled={loading}
+                className='flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-11 px-6 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] shadow-sm hover:bg-primary/90 disabled:opacity-50'
                 type='submit'>
-                <span className='truncate'>Create Category</span>
+                <span className='truncate'>
+                  {loading ? 'Creating...' : 'Create Category'}
+                </span>
               </button>
             </div>
           </form>

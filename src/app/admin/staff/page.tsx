@@ -1,188 +1,191 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { mockStaff } from '@/data/mockData';
-import AdminHeader from '@/components/layout/AdminHeader';
+import { getStaff, deleteStaff, StaffMember } from '@/supabase/services/staff';
 
-export default function StaffPage() {
+export default function AdminStaffPage() {
+  const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedDepartment, setSelectedDepartment] = useState('');
 
-  // Get unique departments for filter
-  const departments = Array.from(
-    new Set(mockStaff.map((s) => s.department))
-  ).sort();
+  const fetchStaff = async () => {
+    try {
+      setLoading(true);
+      const data = await getStaff();
+      setStaffMembers(data);
+    } catch (error) {
+      console.error('Error fetching staff:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const filteredStaff = mockStaff.filter((staff) => {
+  useEffect(() => {
+    fetchStaff();
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Are you sure you want to delete this staff member?')) {
+      try {
+        await deleteStaff(id);
+        setStaffMembers(staffMembers.filter((s) => s.id !== id));
+      } catch (error) {
+        console.error('Error deleting staff:', error);
+      }
+    }
+  };
+
+  const filteredStaff = staffMembers.filter((staff) => {
     const matchesSearch =
       staff.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       staff.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      staff.position.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesDepartment = selectedDepartment
-      ? staff.department === selectedDepartment
-      : true;
-
-    return matchesSearch && matchesDepartment;
+      (staff.department &&
+        staff.department.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchesSearch;
   });
 
   return (
-    <main className='flex flex-1 flex-col overflow-y-auto bg-background-light dark:bg-background-dark'>
-      <div className='flex-1 p-8'>
-        {/* Page Header */}
-        <div className='mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
-          <div>
-            <h1 className='text-3xl font-bold text-text-light-primary dark:text-text-dark-primary'>
-              Staff Directory
+    <main className='flex-1 p-6 lg:p-10'>
+      <div className='mx-auto max-w-7xl'>
+        {/* PageHeading */}
+        <div className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
+          <div className='flex flex-col gap-2'>
+            <h1 className='text-3xl font-bold tracking-tight text-gray-900 dark:text-white'>
+              Staff Management
             </h1>
-            <p className='mt-1 text-text-light-secondary dark:text-text-dark-secondary'>
-              Manage your organization's staff members and their roles.
+            <p className='text-gray-500 dark:text-gray-400'>
+              Manage employees, their roles, and departments.
             </p>
           </div>
           <Link
             href='/admin/staff/create'
-            className='flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 transition-colors'>
-            <span className='material-symbols-outlined text-lg'>
-              person_add
-            </span>
-            <span>Add New Staff</span>
+            className='flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-primary/90 md:w-auto'>
+            <span className='material-symbols-outlined'>person_add</span>
+            <span className='truncate'>Add New Staff</span>
           </Link>
         </div>
 
-        {/* Filters & Content */}
-        <div className='rounded-xl border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark shadow-sm'>
-          {/* Toolbar */}
-          <div className='border-b border-border-light dark:border-border-dark p-4'>
-            <div className='flex flex-col gap-4 md:flex-row md:items-center'>
-              {/* Search */}
-              <div className='relative flex-1 max-w-md'>
-                <span className='material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-light-secondary dark:text-text-dark-secondary'>
-                  search
-                </span>
-                <input
-                  type='text'
-                  placeholder='Search staff by name, email, or role...'
-                  className='w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark py-2 pl-10 pr-4 text-sm text-text-light-primary dark:text-text-dark-primary placeholder:text-text-light-secondary dark:placeholder:text-text-dark-secondary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
+        {/* Search Bar */}
+        <div className='mt-8'>
+          <label className='flex flex-col min-w-40 h-12 w-full md:max-w-md'>
+            <div className='flex w-full flex-1 items-stretch rounded-lg h-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'>
+              <div className='text-gray-400 flex items-center justify-center pl-4'>
+                <span className='material-symbols-outlined'>search</span>
               </div>
+              <input
+                className='appearance-none flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-none border-none bg-transparent h-full placeholder:text-gray-400 px-2 text-base font-normal leading-normal'
+                placeholder='Search by name, email, or department...'
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+          </label>
+        </div>
 
-              {/* Filter */}
-              <div className='relative'>
-                <select
-                  className='appearance-none flex h-10 items-center justify-center gap-x-2 rounded-lg bg-background-light dark:bg-background-dark px-4 pr-10 border border-border-light dark:border-border-dark text-text-light-primary dark:text-text-dark-primary text-sm font-medium focus:ring-primary/50 focus:border-primary focus:outline-none'
-                  value={selectedDepartment}
-                  onChange={(e) => setSelectedDepartment(e.target.value)}>
-                  <option value=''>All Departments</option>
-                  {departments.map((dept) => (
-                    <option key={dept} value={dept}>
-                      {dept}
-                    </option>
-                  ))}
-                </select>
-                <span className='material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-text-light-secondary dark:text-text-dark-secondary text-xl pointer-events-none'>
-                  expand_more
-                </span>
+        {/* Table */}
+        <div className='mt-6 flow-root'>
+          <div className='overflow-x-auto'>
+            <div className='inline-block min-w-full align-middle'>
+              <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'>
+                {loading ? (
+                  <div className='flex p-8 justify-center'>
+                    <div className='h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent'></div>
+                  </div>
+                ) : filteredStaff.length === 0 ? (
+                  <div className='p-8 text-center text-gray-500 dark:text-gray-400'>
+                    No staff members found.
+                  </div>
+                ) : (
+                  <table className='min-w-full divide-y divide-gray-200 dark:divide-gray-700'>
+                    <thead className='bg-gray-50 dark:bg-gray-900/50'>
+                      <tr>
+                        <th
+                          scope='col'
+                          className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6'>
+                          Name
+                        </th>
+                        <th
+                          scope='col'
+                          className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'>
+                          Title & Department
+                        </th>
+                        <th
+                          scope='col'
+                          className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'>
+                          Role
+                        </th>
+                        <th
+                          scope='col'
+                          className='relative py-3.5 pl-3 pr-4 sm:pr-6'>
+                          <span className='sr-only'>Actions</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className='divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800'>
+                      {filteredStaff.map((staff) => (
+                        <tr key={staff.id}>
+                          <td className='whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6'>
+                            <div className='flex items-center'>
+                              <div className='h-10 w-10 flex-shrink-0'>
+                                {staff.avatar ? (
+                                  <img
+                                    className='h-10 w-10 rounded-full object-cover'
+                                    src={staff.avatar}
+                                    alt=''
+                                  />
+                                ) : (
+                                  <div className='flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500'>
+                                    <span className='material-symbols-outlined text-lg'>
+                                      person
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                              <div className='ml-4'>
+                                <div className='font-medium text-gray-900 dark:text-white'>
+                                  {staff.name}
+                                </div>
+                                <div className='text-gray-500 dark:text-gray-400'>
+                                  {staff.email}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300'>
+                            <div className='text-gray-900 dark:text-white'>
+                              {staff.position || 'N/A'}
+                            </div>
+                            <div className='text-gray-500'>
+                              {staff.department || 'N/A'}
+                            </div>
+                          </td>
+                          <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-500'>
+                            <span
+                              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                                staff.role === 'admin'
+                                  ? 'bg-purple-100 text-purple-800'
+                                  : 'bg-green-100 text-green-800'
+                              }`}>
+                              {staff.role}
+                            </span>
+                          </td>
+                          <td className='relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6'>
+                            <button
+                              onClick={() => handleDelete(staff.id)}
+                              className='text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors'>
+                              <span className='material-symbols-outlined'>
+                                delete
+                              </span>
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
               </div>
             </div>
-          </div>
-
-          {/* Table */}
-          <div className='overflow-x-auto'>
-            <table className='w-full text-left text-sm text-text-light-secondary dark:text-text-dark-secondary'>
-              <thead className='border-b border-border-light dark:border-border-dark bg-gray-50 dark:bg-gray-800/50 text-xs uppercase text-text-light-primary dark:text-text-dark-primary'>
-                <tr>
-                  <th scope='col' className='px-6 py-3 font-medium'>
-                    Name
-                  </th>
-                  <th scope='col' className='px-6 py-3 font-medium'>
-                    Position
-                  </th>
-                  <th scope='col' className='px-6 py-3 font-medium'>
-                    Department
-                  </th>
-                  <th scope='col' className='px-6 py-3 font-medium'>
-                    Email
-                  </th>
-                  <th scope='col' className='px-6 py-3 text-right font-medium'>
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className='divide-y divide-border-light dark:divide-border-dark'>
-                {filteredStaff.length > 0 ? (
-                  filteredStaff.map((staff) => (
-                    <tr
-                      key={staff.id}
-                      className='hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors'>
-                      <td className='whitespace-nowrap px-6 py-4 font-medium text-text-light-primary dark:text-text-dark-primary'>
-                        <div className='flex items-center gap-3'>
-                          <img
-                            className='h-9 w-9 rounded-full object-cover border border-border-light dark:border-border-dark'
-                            src={staff.avatar}
-                            alt={`${staff.name}'s avatar`}
-                          />
-                          <span>{staff.name}</span>
-                        </div>
-                      </td>
-                      <td className='whitespace-nowrap px-6 py-4'>
-                        {staff.position}
-                      </td>
-                      <td className='whitespace-nowrap px-6 py-4'>
-                        <span className='inline-flex rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 px-2.5 py-0.5 text-xs font-medium'>
-                          {staff.department}
-                        </span>
-                      </td>
-                      <td className='whitespace-nowrap px-6 py-4'>
-                        {staff.email}
-                      </td>
-                      <td className='whitespace-nowrap px-6 py-4 text-right'>
-                        <div className='flex items-center justify-end gap-2'>
-                          <Link
-                            href={`/admin/staff/${staff.id}/edit`}
-                            className='rounded-lg p-1.5 text-text-light-secondary hover:bg-gray-100 hover:text-primary dark:text-text-dark-secondary dark:hover:bg-gray-800 transition-colors'
-                            title='Edit'>
-                            <span className='material-symbols-outlined text-lg'>
-                              edit
-                            </span>
-                          </Link>
-                          <button
-                            className='rounded-lg p-1.5 text-text-light-secondary hover:bg-red-50 hover:text-red-600 dark:text-text-dark-secondary dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-colors cursor-pointer'
-                            title='Delete'
-                            onClick={() =>
-                              confirm(
-                                'Are you sure you want to delete this staff member?'
-                              )
-                            }>
-                            <span className='material-symbols-outlined text-lg'>
-                              delete
-                            </span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={5} className='px-6 py-8 text-center'>
-                      <div className='flex flex-col items-center justify-center gap-2'>
-                        <span className='material-symbols-outlined text-4xl text-gray-300'>
-                          search_off
-                        </span>
-                        <p className='text-base font-medium text-text-light-primary dark:text-text-dark-primary'>
-                          No staff members found
-                        </p>
-                        <p className='text-sm text-text-light-secondary dark:text-text-dark-secondary'>
-                          Try adjusting your search or filters
-                        </p>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
           </div>
         </div>
       </div>
