@@ -67,8 +67,6 @@ export default function NominationsPage() {
 
   return (
     <main className='flex flex-1 flex-col overflow-y-auto'>
-      <AdminHeader title='Shortlist Nominees' />
-
       <div className='flex-1 p-8'>
         {/* PageHeading */}
         <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6'>
