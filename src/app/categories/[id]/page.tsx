@@ -1,34 +1,54 @@
 'use client';
 
-import { useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import StaffCard from '@/components/ui/StaffCard';
 import SearchBar from '@/components/ui/SearchBar';
 import NominationFormModal from '@/components/ui/NominationFormModal';
 import NominationSuccessModal from '@/components/ui/NominationSuccessModal';
-import { mockCategories, mockStaff } from '@/data/mockData';
+import { getCategoryById, Category } from '@/supabase/services/categories';
+import { getStaff, StaffMember } from '@/supabase/services/staff';
+import { castVote } from '@/supabase/services/votes';
+import { useAuth } from '@/supabase/hooks/useAuth';
 
 export default function CategoryPage() {
   const params = useParams();
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
+  const [category, setCategory] = useState<Category | null>(null);
+  const [staffList, setStaffList] = useState<StaffMember[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const category = mockCategories.find((c) => c.id === params.id);
-  const selectedStaff = mockStaff.find((s) => s.id === selectedStaffId);
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [catData, staffData] = await Promise.all([
+          getCategoryById(params.id as string),
+          getStaff()
+        ]);
+        setCategory(catData);
+        setStaffList(staffData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    if (params.id) {
+      fetchData();
+    }
+  }, [params.id]);
 
-  if (!category) {
-    return (
-      <div className='min-h-screen flex items-center justify-center'>
-        <p>Category not found</p>
-      </div>
-    );
-  }
+  const selectedStaff = staffList.find((s) => s.id === selectedStaffId);
 
-  const filteredStaff = mockStaff.filter(
+  const filteredStaff = staffList.filter(
     (staff) =>
       staff.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       staff.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -36,25 +56,65 @@ export default function CategoryPage() {
   );
 
   const handleNominateClick = () => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
     if (selectedStaffId) {
       setIsFormModalOpen(true);
     }
   };
 
-  const handleNominationSubmit = (reason: string) => {
-    console.log('Nomination submitted:', {
-      staffId: selectedStaffId,
-      categoryId: category?.id,
-      reason,
-    });
-    setIsFormModalOpen(false);
-    setIsSuccessModalOpen(true);
+  const handleNominationSubmit = async (reason: string) => {
+    if (!user || !category || !selectedStaffId) return;
+
+    try {
+      setSubmitting(true);
+      // We are using castVote which uses upsert to allow replacing votes.
+      // Note: The 'reason' is currently not stored in the votes table as it doesn't have a column for it.
+      await castVote({
+        voter_id: user.id,
+        category_id: category.id,
+        nominee_id: selectedStaffId,
+      });
+      setIsFormModalOpen(false);
+      setIsSuccessModalOpen(true);
+    } catch (error) {
+      console.error('Error submitting vote:', error);
+      alert('Failed to submit vote. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleSuccessClose = () => {
     setIsSuccessModalOpen(false);
     setSelectedStaffId(null);
   };
+
+  if (loading || authLoading) {
+    return (
+      <div className='min-h-screen flex items-center justify-center bg-background-light dark:bg-background-dark'>
+        <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary'></div>
+      </div>
+    );
+  }
+
+  if (!category) {
+    return (
+      <div className='min-h-screen flex items-center justify-center bg-background-light dark:bg-background-dark'>
+        <p className='text-text-light-primary dark:text-text-dark-primary'>Category not found</p>
+      </div>
+    );
+  }
+
+  // Helper to map StaffMember to the interface expected by StaffCard (if different)
+  // StaffMember has same fields as Staff interface: id, name, position, department, avatar (nullable vs string)
+  // We need to handle null avatar
+  const mapStaffToCard = (staff: StaffMember) => ({
+    ...staff,
+    avatar: staff.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(staff.name)
+  });
 
   return (
     <div className='relative flex min-h-screen w-full flex-col bg-background-light dark:bg-background-dark'>
@@ -87,7 +147,7 @@ export default function CategoryPage() {
                 calendar_today
               </span>
               <p className='text-text-light-secondary dark:text-text-dark-secondary text-sm'>
-                Nominations close: {category.nominationDeadline}
+                Nominations close: {new Date(category.nomination_deadline).toLocaleDateString()}
               </p>
             </div>
           </div>
@@ -122,8 +182,8 @@ export default function CategoryPage() {
               <button
                 onClick={handleNominateClick}
                 className='flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors disabled:bg-slate-300 dark:disabled:bg-slate-600 disabled:cursor-not-allowed'
-                disabled={!selectedStaffId}>
-                <span className='truncate'>Nominate Staff</span>
+                disabled={!selectedStaffId || submitting}>
+                <span className='truncate'>{submitting ? 'Submitting...' : 'Nominate Staff'}</span>
               </button>
             </div>
           </div>
@@ -139,7 +199,7 @@ export default function CategoryPage() {
               {filteredStaff.map((staff) => (
                 <StaffCard
                   key={staff.id}
-                  staff={staff}
+                  staff={mapStaffToCard(staff)}
                   selected={selectedStaffId === staff.id}
                   onClick={() => setSelectedStaffId(staff.id)}
                 />
@@ -158,7 +218,7 @@ export default function CategoryPage() {
                   onClick={() => setSelectedStaffId(staff.id)}>
                   <div
                     className='bg-center bg-no-repeat aspect-square bg-cover rounded-full size-16 shrink-0'
-                    style={{ backgroundImage: `url(${staff.avatar})` }}
+                    style={{ backgroundImage: `url(${staff.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(staff.name)})` }}
                   />
                   <div className='flex-1 min-w-0'>
                     <h4 className='text-slate-900 dark:text-slate-100 text-base font-bold leading-tight'>
@@ -187,16 +247,16 @@ export default function CategoryPage() {
 
       <NominationFormModal
         isOpen={isFormModalOpen}
-        staff={selectedStaff || null}
-        category={category}
+        staff={selectedStaff ? mapStaffToCard(selectedStaff) : null}
+        category={category ? { ...category, nominationDeadline: category.nomination_deadline } : null}
         onClose={() => setIsFormModalOpen(false)}
         onSubmit={handleNominationSubmit}
       />
 
       <NominationSuccessModal
         isOpen={isSuccessModalOpen}
-        staff={selectedStaff || null}
-        category={category}
+        staff={selectedStaff ? mapStaffToCard(selectedStaff) : null}
+        category={category ? { ...category, nominationDeadline: category.nomination_deadline } : null}
         onClose={handleSuccessClose}
       />
     </div>

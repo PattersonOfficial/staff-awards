@@ -93,13 +93,14 @@ export function useAuth() {
       setLoading(true);
       setError(null);
       await signOut();
-      setUser(null);
-      setIsAdminUser(false);
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Sign out failed');
       setError(error);
-      throw error;
+      console.error('Error during sign out:', error);
     } finally {
+      // Always clear user state even if server request fails
+      setUser(null);
+      setIsAdminUser(false);
       setLoading(false);
     }
   };

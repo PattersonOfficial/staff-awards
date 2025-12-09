@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/supabase/hooks/useAuth';
 import Header from '@/components/layout/Header';
 import NominationDetailModal from '@/components/ui/NominationDetailModal';
 import CancelNominationModal from '@/components/ui/CancelNominationModal';
@@ -9,6 +11,15 @@ import { mockNominations } from '@/data/mockData';
 import { Nomination } from '@/types';
 
 export default function MyNominationsPage() {
+  const router = useRouter();
+  const { user, loading } = useAuth();
+  
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
   const [filter, setFilter] = useState<
     'all' | 'pending' | 'approved' | 'rejected'
   >('all');
@@ -24,6 +35,18 @@ export default function MyNominationsPage() {
   } | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+
+  if (loading) {
+    return (
+      <div className='flex h-screen w-full items-center justify-center bg-[#F8F9FA] dark:bg-background-dark'>
+        <div className='h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent'></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null; // Will redirect via useEffect
+  }
 
   const filteredNominations =
     filter === 'all'
@@ -98,8 +121,7 @@ export default function MyNominationsPage() {
                     ? 'bg-[#0A4D68] text-white'
                     : 'bg-white dark:bg-gray-800 text-[#6c757d] dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}>
-                Pending (
-                {nominations.filter((n) => n.status === 'pending').length})
+                Pending
               </button>
               <button
                 onClick={() => setFilter('approved')}
@@ -108,8 +130,7 @@ export default function MyNominationsPage() {
                     ? 'bg-[#0A4D68] text-white'
                     : 'bg-white dark:bg-gray-800 text-[#6c757d] dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}>
-                Approved (
-                {nominations.filter((n) => n.status === 'approved').length})
+                Approved
               </button>
               <button
                 onClick={() => setFilter('rejected')}
@@ -118,15 +139,13 @@ export default function MyNominationsPage() {
                     ? 'bg-[#0A4D68] text-white'
                     : 'bg-white dark:bg-gray-800 text-[#6c757d] dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}>
-                Rejected (
-                {nominations.filter((n) => n.status === 'rejected').length})
+                Rejected
               </button>
             </div>
-
             <div className='flex items-center gap-1 bg-white dark:bg-gray-800 rounded-lg p-1 border border-gray-200 dark:border-gray-700'>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-2 rounded-md transition-colors ${
+                className={`p-2 rounded-md transition-colors cursor-pointer ${
                   viewMode === 'list'
                     ? 'bg-[#0A4D68] text-white'
                     : 'text-[#6c757d] dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -136,7 +155,7 @@ export default function MyNominationsPage() {
               </button>
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-2 rounded-md transition-colors ${
+                className={`p-2 rounded-md transition-colors cursor-pointer ${
                   viewMode === 'grid'
                     ? 'bg-[#0A4D68] text-white'
                     : 'text-[#6c757d] dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -148,157 +167,136 @@ export default function MyNominationsPage() {
           </div>
 
           {filteredNominations.length === 0 ? (
-            <div className='text-center py-16'>
-              <div className='inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 mb-4'>
-                <span className='material-symbols-outlined text-4xl text-gray-400'>
+            <div className='flex flex-col items-center justify-center rounded-xl bg-white dark:bg-card-dark p-12 text-center shadow-sm border border-gray-200 dark:border-gray-700'>
+              <div className='mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'>
+                <span className='material-symbols-outlined text-3xl'>
                   inbox
                 </span>
               </div>
-              <h3 className='text-xl font-semibold text-[#212529] dark:text-text-dark-primary mb-2'>
+              <h3 className='text-lg font-bold text-text-light-primary dark:text-text-dark-primary'>
                 No nominations found
               </h3>
-              <p className='text-[#6c757d] dark:text-text-dark-secondary'>
-                You haven't submitted any nominations yet. Start nominating your
-                colleagues!
+              <p className='mt-1 text-text-light-secondary dark:text-text-dark-secondary'>
+                {filter === 'all'
+                  ? "You haven't submitted any nominations yet."
+                  : `You don't have any ${filter} nominations.`}
               </p>
             </div>
           ) : viewMode === 'list' ? (
-            <div className='grid grid-cols-1 gap-6'>
+            <div className='flex flex-col gap-4'>
               {filteredNominations.map((nomination) => (
                 <div
                   key={nomination.id}
-                  className='bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow overflow-hidden'>
-                  <div className='p-6'>
-                    <div className='flex flex-col md:flex-row md:items-start md:justify-between gap-4'>
-                      <div className='flex items-start gap-4 flex-1'>
-                        <div
-                          className='w-16 h-16 rounded-full bg-cover bg-center shrink-0'
-                          style={{
-                            backgroundImage: `url(${nomination.nominee.avatar})`,
-                          }}
-                        />
-                        <div className='flex-1 min-w-0'>
-                          <div className='flex items-center gap-2 mb-1'>
-                            <h3 className='text-lg font-bold text-[#212529] dark:text-white'>
-                              {nomination.nominee.name}
-                            </h3>
-                            <span
-                              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${getStatusColor(
-                                nomination.status
-                              )}`}>
-                              {nomination.status.charAt(0).toUpperCase() +
-                                nomination.status.slice(1)}
-                            </span>
-                          </div>
-                          <p className='text-sm text-[#6c757d] dark:text-gray-400 mb-1'>
-                            {nomination.nominee.position} •{' '}
-                            {nomination.nominee.department}
-                          </p>
-                          <div className='flex items-center gap-4 text-xs text-[#6c757d] dark:text-gray-400 mb-3'>
-                            <span className='flex items-center gap-1'>
-                              <span className='material-symbols-outlined text-sm'>
-                                workspace_premium
-                              </span>
-                              {nomination.category.title}
-                            </span>
-                            <span className='flex items-center gap-1'>
-                              <span className='material-symbols-outlined text-sm'>
-                                calendar_today
-                              </span>
-                              {new Date(
-                                nomination.submittedAt
-                              ).toLocaleDateString()}
-                            </span>
-                          </div>
-                          <div className='bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3 mt-3'>
-                            <p className='text-xs font-semibold text-[#212529] dark:text-white mb-1'>
-                              Reason for Nomination:
-                            </p>
-                            <p className='text-sm text-[#6c757d] dark:text-gray-400'>
-                              {nomination.reason}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className='flex md:flex-col gap-2'>
+                  className='group flex flex-col md:flex-row items-start md:items-center justify-between gap-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-card-dark p-4 shadow-sm transition-all hover:shadow-md'>
+                  <div className='flex items-center gap-4'>
+                    <div className='relative h-12 w-12 shrink-0 overflow-hidden rounded-full'>
+                      <img
+                        src={nomination.nominee.avatar}
+                        alt={nomination.nominee.name}
+                        className='h-full w-full object-cover'
+                      />
+                    </div>
+                    <div>
+                      <h3 className='font-bold text-text-light-primary dark:text-text-dark-primary'>
+                        {nomination.nominee.name}
+                      </h3>
+                      <p className='text-sm text-text-light-secondary dark:text-text-dark-secondary'>
+                        {nomination.category.title}
+                      </p>
+                    </div>
+                  </div>
+                  <div className='flex w-full md:w-auto items-center justify-between gap-4 md:justify-end'>
+                    <div className='flex items-center gap-4'>
+                      <span className='text-sm text-text-light-secondary dark:text-text-dark-secondary'>
+                        Submitted {new Date(nomination.submittedAt).toLocaleDateString()}
+                      </span>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(
+                          nomination.status
+                        )}`}>
+                        {nomination.status.charAt(0).toUpperCase() +
+                          nomination.status.slice(1)}
+                      </span>
+                    </div>
+                    <div className='flex items-center gap-1'>
+                      <button
+                        onClick={() => handleViewNomination(nomination)}
+                        className='flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300 transition-colors'
+                        title='View details'>
+                        <span className='material-symbols-outlined text-xl'>
+                          visibility
+                        </span>
+                      </button>
+                      {nomination.status === 'pending' && (
                         <button
-                          onClick={() => handleViewNomination(nomination)}
-                          className='flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-[#6c757d] dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium transition-colors'>
-                          <span className='material-symbols-outlined text-sm'>
-                            visibility
+                          onClick={() =>
+                            handleCancelClick(
+                              nomination.id,
+                              nomination.nominee.name
+                            )
+                          }
+                          className='flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors'
+                          title='Cancel nomination'>
+                          <span className='material-symbols-outlined text-xl'>
+                            close
                           </span>
-                          <span className='hidden sm:inline'>View</span>
                         </button>
-                        {nomination.status === 'pending' && (
-                          <button
-                            onClick={() =>
-                              handleCancelClick(
-                                nomination.id,
-                                nomination.nominee.name
-                              )
-                            }
-                            className='flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 text-sm font-medium transition-colors'>
-                            <span className='material-symbols-outlined text-sm'>
-                              delete
-                            </span>
-                            <span className='hidden sm:inline'>Cancel</span>
-                          </button>
-                        )}
-                      </div>
+                      )}
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
+            <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
               {filteredNominations.map((nomination) => (
                 <div
                   key={nomination.id}
-                  className='bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col'>
-                  <div className='p-6 flex flex-col items-center text-center flex-1'>
-                    <div
-                      className='w-24 h-24 rounded-full bg-cover bg-center mb-4'
-                      style={{
-                        backgroundImage: `url(${nomination.nominee.avatar})`,
-                      }}
-                    />
-                    <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold mb-2 ${getStatusColor(
-                        nomination.status
-                      )}`}>
-                      {nomination.status.charAt(0).toUpperCase() +
-                        nomination.status.slice(1)}
-                    </span>
-                    <h3 className='text-lg font-bold text-[#212529] dark:text-white mb-1'>
-                      {nomination.nominee.name}
-                    </h3>
-                    <p className='text-sm text-[#6c757d] dark:text-gray-400 mb-1'>
-                      {nomination.nominee.position}
-                    </p>
-                    <p className='text-xs text-[#6c757d] dark:text-gray-500 mb-3'>
-                      {nomination.nominee.department}
-                    </p>
-                    <div className='flex flex-col gap-1 text-xs text-[#6c757d] dark:text-gray-400 mb-4 w-full'>
-                      <span className='flex items-center justify-center gap-1'>
-                        <span className='material-symbols-outlined text-sm'>
-                          workspace_premium
-                        </span>
-                        {nomination.category.title}
+                  className='group flex flex-col overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-card-dark shadow-sm transition-all hover:shadow-md'>
+                  <div className='flex items-center gap-4 border-b border-gray-200 dark:border-gray-700 p-4'>
+                    <div className='relative h-10 w-10 shrink-0 overflow-hidden rounded-full'>
+                      <img
+                        src={nomination.nominee.avatar}
+                        alt={nomination.nominee.name}
+                        className='h-full w-full object-cover'
+                      />
+                    </div>
+                    <div className='overflow-hidden'>
+                      <h3 className='truncate font-bold text-text-light-primary dark:text-text-dark-primary'>
+                        {nomination.nominee.name}
+                      </h3>
+                      <p className='truncate text-xs text-text-light-secondary dark:text-text-dark-secondary'>
+                        {nomination.nominee.position}
+                      </p>
+                    </div>
+                  </div>
+                  <div className='flex flex-1 flex-col p-4'>
+                    <div className='mb-4'>
+                      <span className='text-xs font-medium text-text-light-secondary dark:text-text-dark-secondary uppercase tracking-wider'>
+                        Category
                       </span>
-                      <span className='flex items-center justify-center gap-1'>
-                        <span className='material-symbols-outlined text-sm'>
-                          calendar_today
-                        </span>
+                      <p className='font-medium text-primary'>
+                        {nomination.category.title}
+                      </p>
+                    </div>
+                    <div className='mt-auto flex items-center justify-between'>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(
+                          nomination.status
+                        )}`}>
+                        {nomination.status.charAt(0).toUpperCase() +
+                          nomination.status.slice(1)}
+                      </span>
+                      <span className='text-xs text-text-light-secondary dark:text-text-dark-secondary'>
                         {new Date(nomination.submittedAt).toLocaleDateString()}
                       </span>
                     </div>
                   </div>
-                  <div className='border-t border-gray-200 dark:border-gray-700 p-4 flex gap-2'>
+                  <div className='flex items-center gap-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-3'>
                     <button
                       onClick={() => handleViewNomination(nomination)}
-                      className='flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-[#6c757d] dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium transition-colors'>
-                      <span className='material-symbols-outlined text-sm'>
+                      className='flex flex-1 items-center justify-center gap-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 py-2 text-sm font-medium text-text-light-primary dark:text-text-dark-primary hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors'>
+                      <span className='material-symbols-outlined text-lg'>
                         visibility
                       </span>
                       View
@@ -311,11 +309,11 @@ export default function MyNominationsPage() {
                             nomination.nominee.name
                           )
                         }
-                        className='flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-lg border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 text-sm font-medium transition-colors'>
-                        <span className='material-symbols-outlined text-sm'>
-                          delete
+                        className='flex items-center justify-center rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-2 text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors'
+                        title='Cancel'>
+                        <span className='material-symbols-outlined text-lg'>
+                          close
                         </span>
-                        Cancel
                       </button>
                     )}
                   </div>
@@ -323,59 +321,27 @@ export default function MyNominationsPage() {
               ))}
             </div>
           )}
-
-          {filteredNominations.length > 0 && (
-            <div className='mt-8 flex items-center justify-center'>
-              <nav className='flex items-center gap-2'>
-                <button className='flex items-center justify-center size-10 rounded-lg hover:bg-white dark:hover:bg-gray-800 text-[#6c757d] dark:text-gray-400 transition-colors border border-gray-200 dark:border-gray-700'>
-                  <span className='material-symbols-outlined'>
-                    chevron_left
-                  </span>
-                </button>
-                <button className='flex items-center justify-center size-10 rounded-lg bg-[#0A4D68] text-white font-bold'>
-                  1
-                </button>
-                <button className='flex items-center justify-center size-10 rounded-lg hover:bg-white dark:hover:bg-gray-800 text-[#6c757d] dark:text-gray-300 font-medium border border-gray-200 dark:border-gray-700'>
-                  2
-                </button>
-                <button className='flex items-center justify-center size-10 rounded-lg hover:bg-white dark:hover:bg-gray-800 text-[#6c757d] dark:text-gray-300 font-medium border border-gray-200 dark:border-gray-700'>
-                  3
-                </button>
-                <button className='flex items-center justify-center size-10 rounded-lg hover:bg-white dark:hover:bg-gray-800 text-[#6c757d] dark:text-gray-400 transition-colors border border-gray-200 dark:border-gray-700'>
-                  <span className='material-symbols-outlined'>
-                    chevron_right
-                  </span>
-                </button>
-              </nav>
-            </div>
-          )}
         </div>
       </main>
 
       <NominationDetailModal
-        nomination={selectedNomination}
         isOpen={isDetailModalOpen}
-        onClose={() => {
-          setIsDetailModalOpen(false);
-          setSelectedNomination(null);
-        }}
+        onClose={() => setIsDetailModalOpen(false)}
+        nomination={selectedNomination}
       />
 
       <CancelNominationModal
         isOpen={isCancelModalOpen}
-        nominationId={nominationToCancel?.id || ''}
+        onClose={() => setIsCancelModalOpen(false)}
+        onConfirm={() =>
+          nominationToCancel && handleConfirmCancel(nominationToCancel.id)
+        }
         nomineeName={nominationToCancel?.name || ''}
-        onConfirm={handleConfirmCancel}
-        onCancel={() => {
-          setIsCancelModalOpen(false);
-          setNominationToCancel(null);
-        }}
       />
 
       <Toast
+        show={showToast}
         message={toastMessage}
-        type='success'
-        isVisible={showToast}
         onClose={() => setShowToast(false)}
       />
     </div>
