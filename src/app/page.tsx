@@ -32,6 +32,8 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [departmentFilter, setDepartmentFilter] = useState('all');
+  const [sortBy, setSortBy] = useState<'deadline' | 'title'>('deadline');
 
   useEffect(() => {
     async function fetchCategories() {
@@ -60,11 +62,34 @@ export default function Home() {
     fetchCategories();
   }, []);
 
-  const filteredCategories = categories.filter(
-    (category) =>
-      category.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      category.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Extract unique departments
+  const departments = Array.from(
+    new Set(
+      categories
+        .map((c) => c.department)
+        .filter((d): d is string => !!d && d.trim() !== '')
+    )
+  ).sort();
+
+  const filteredCategories = categories
+    .filter((category) => {
+      const matchesSearch =
+        category.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        category.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesDepartment =
+        departmentFilter === 'all' || category.department === departmentFilter;
+      return matchesSearch && matchesDepartment;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'deadline') {
+        const dateA = new Date(a.nominationDeadline).getTime() || 0;
+        const dateB = new Date(b.nominationDeadline).getTime() || 0;
+        return dateA - dateB; // ASC (earliest deadline first usually?) OR DESC?
+        // Usually people want to see what's closing soonest at the top (ASC of future dates)
+        // But if date is passed, it falls back. Let's stick to simplest ASC timestamp.
+      }
+      return a.title.localeCompare(b.title);
+    });
 
   if (loading) {
     return (
@@ -95,22 +120,40 @@ export default function Home() {
               onChange={setSearchQuery}
             />
             <div className='flex flex-wrap items-center gap-2'>
-              <button className='flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark px-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer'>
-                <p className='text-sm font-medium text-text-light-primary dark:text-text-dark-primary'>
-                  Filter by Department
-                </p>
-                <span className='material-symbols-outlined text-base'>
+              {/* Department Filter */}
+              <div className='relative'>
+                <select
+                  value={departmentFilter}
+                  onChange={(e) => setDepartmentFilter(e.target.value)}
+                  className='appearance-none h-10 pl-3 pr-8 rounded-lg border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark text-sm font-medium text-text-light-primary dark:text-text-dark-primary hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20'>
+                  <option value='all'>All Departments</option>
+                  {departments.map((dept) => (
+                    <option key={dept} value={dept}>
+                      {dept}
+                    </option>
+                  ))}
+                </select>
+                <span className='material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-base pointer-events-none text-gray-500'>
                   expand_more
                 </span>
-              </button>
-              <button className='flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark px-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer'>
-                <p className='text-sm font-medium text-text-light-primary dark:text-text-dark-primary'>
-                  Sort by Deadline
-                </p>
-                <span className='material-symbols-outlined text-base'>
+              </div>
+
+              {/* Sort Filter */}
+              <div className='relative'>
+                <select
+                  value={sortBy}
+                  onChange={(e) =>
+                    setSortBy(e.target.value as 'deadline' | 'title')
+                  }
+                  className='appearance-none h-10 pl-3 pr-8 rounded-lg border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark text-sm font-medium text-text-light-primary dark:text-text-dark-primary hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20'>
+                  <option value='deadline'>Sort by Deadline</option>
+                  <option value='title'>Sort by Title</option>
+                </select>
+                <span className='material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-base pointer-events-none text-gray-500'>
                   expand_more
                 </span>
-              </button>
+              </div>
+
               <div className='flex items-center gap-1 bg-white dark:bg-gray-800 rounded-lg p-1 border border-gray-200 dark:border-gray-700'>
                 <button
                   onClick={() => setViewMode('list')}
