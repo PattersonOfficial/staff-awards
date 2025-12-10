@@ -47,7 +47,7 @@ export default function Header() {
   const handleConfirmLogout = async () => {
     try {
       await signOut();
-      router.push('/login');
+      router.push('/');
     } catch (error) {
       console.error('Error signing out:', error);
     } finally {
@@ -95,7 +95,7 @@ export default function Header() {
               <div className='relative' ref={dropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className='flex items-center gap-2 focus:outline-none'
+                  className='flex items-center gap-2 focus:outline-none cursor-pointer'
                   title={userName}>
                   {avatarUrl ? (
                     <div
@@ -121,7 +121,7 @@ export default function Header() {
                       </div>
                       <button
                         onClick={handleLogout}
-                        className='block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'>
+                        className='block w-full cursor-pointer text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'>
                         Sign out
                       </button>
                     </div>
