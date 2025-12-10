@@ -1,5 +1,6 @@
 import { AwardCategory } from '@/types';
 import Link from 'next/link';
+import { formatDate } from '@/lib/utils';
 
 interface AwardCategoryCardProps {
   category: AwardCategory;
@@ -40,7 +41,7 @@ export default function AwardCategoryCard({
           <span className='material-symbols-outlined mr-1.5 text-sm'>
             calendar_today
           </span>
-          Nominations close: {category.nominationDeadline}
+          Nominations close: {formatDate(category.nominationDeadline)}
         </div>
         <Link
           href={`/categories/${category.id}`}

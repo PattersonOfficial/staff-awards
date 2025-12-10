@@ -10,6 +10,7 @@ import {
 } from '@/supabase/services/categories';
 import { AwardCategory } from '@/types';
 import Link from 'next/link';
+import { formatDate } from '@/lib/utils';
 
 // Helper to map Supabase Category to AwardCategory
 const mapCategory = (cat: SupabaseCategory): AwardCategory => ({
@@ -84,9 +85,7 @@ export default function Home() {
       if (sortBy === 'deadline') {
         const dateA = new Date(a.nominationDeadline).getTime() || 0;
         const dateB = new Date(b.nominationDeadline).getTime() || 0;
-        return dateA - dateB; // ASC (earliest deadline first usually?) OR DESC?
-        // Usually people want to see what's closing soonest at the top (ASC of future dates)
-        // But if date is passed, it falls back. Let's stick to simplest ASC timestamp.
+        return dateA - dateB; // ASC
       }
       return a.title.localeCompare(b.title);
     });
@@ -237,7 +236,8 @@ export default function Home() {
                         <span className='material-symbols-outlined text-sm'>
                           calendar_today
                         </span>
-                        Nominations close: {category.nominationDeadline}
+                        Nominations close:{' '}
+                        {formatDate(category.nominationDeadline)}
                       </div>
                     </div>
                   </div>

@@ -360,7 +360,7 @@ export default function CategoryPage() {
               <div className='flex rounded-lg bg-gray-100 dark:bg-gray-800 p-1'>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 rounded ${
+                  className={`p-2 pb-0! rounded ${
                     viewMode === 'list'
                       ? 'bg-white shadow text-primary'
                       : 'text-gray-500'
@@ -369,7 +369,7 @@ export default function CategoryPage() {
                 </button>
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded ${
+                  className={`p-2 pb-0! rounded ${
                     viewMode === 'grid'
                       ? 'bg-white shadow text-primary'
                       : 'text-gray-500'
@@ -386,7 +386,7 @@ export default function CategoryPage() {
                     submitting ||
                     (currentPhase === 'voting' && alreadyVoted)
                   }
-                  className='h-12 px-6 rounded-lg bg-primary text-white font-bold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all'>
+                  className='h-12 cursor-pointer px-6 rounded-lg bg-primary text-white font-bold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all'>
                   {submitting
                     ? 'Processing...'
                     : currentPhase === 'voting'
