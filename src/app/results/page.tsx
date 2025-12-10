@@ -94,7 +94,8 @@ export default function ResultsPage() {
             category: mapCategory(cat),
             nominees,
             totalVotes,
-            status: 'completed', // You might want to derive this from cat.status
+            status: 'completed',
+            winnerId: cat.winner_id || null, // Include the official winner ID
           });
         }
 
@@ -362,8 +363,21 @@ export default function ResultsPage() {
                             <h4
                               className={`${
                                 nomineeIndex === 0 ? 'text-base' : 'text-sm'
-                              } font-bold text-[#212529] dark:text-white truncate`}>
+                              } font-bold text-[#212529] dark:text-white truncate flex items-center gap-1.5`}>
                               {nominee.nominee.name}
+                              {nomineeIndex === 0 &&
+                                result.winnerId === nominee.nominee.id && (
+                                  <span className='inline-flex items-center gap-0.5 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 text-[10px] font-bold px-1.5 py-0.5 rounded-full'>
+                                    <span
+                                      className='material-symbols-outlined text-xs'
+                                      style={{
+                                        fontVariationSettings: "'FILL' 1",
+                                      }}>
+                                      verified
+                                    </span>
+                                    Official
+                                  </span>
+                                )}
                             </h4>
                             <div className='flex items-center gap-2'>
                               <div className='flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden'>
@@ -444,8 +458,21 @@ export default function ResultsPage() {
                                     nomineeIndex === 0
                                       ? 'text-2xl lg:text-3xl'
                                       : 'text-xl lg:text-2xl'
-                                  } font-bold text-[#212529] dark:text-white mb-1`}>
+                                  } font-bold text-[#212529] dark:text-white mb-1 flex items-center gap-2 flex-wrap`}>
                                   {nominee.nominee.name}
+                                  {nomineeIndex === 0 &&
+                                    result.winnerId === nominee.nominee.id && (
+                                      <span className='inline-flex items-center gap-1 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 text-xs font-bold px-2.5 py-1 rounded-full'>
+                                        <span
+                                          className='material-symbols-outlined text-sm'
+                                          style={{
+                                            fontVariationSettings: "'FILL' 1",
+                                          }}>
+                                          verified
+                                        </span>
+                                        Official Winner
+                                      </span>
+                                    )}
                                 </h3>
                                 <p className='text-sm text-[#6c757d] dark:text-gray-400'>
                                   {nominee.nominee.position}

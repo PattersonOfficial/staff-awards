@@ -54,6 +54,7 @@ export interface VotingResult {
   }[];
   totalVotes: number;
   status: 'ongoing' | 'completed';
+  winnerId?: string | null; // Official winner ID when published
 }
 
 export type UserRole = 'staff' | 'admin';
