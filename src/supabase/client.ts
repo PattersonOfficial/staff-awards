@@ -1,3 +1,4 @@
+import { createBrowserClient } from '@supabase/ssr';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
@@ -7,15 +8,21 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 let supabase: SupabaseClient<Database>;
 
 if (supabaseUrl && supabaseAnonKey) {
-  supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      flowType: 'pkce',
-      storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: true,
-    },
-  });
+  // Use createBrowserClient for browser-side usage
+  // This properly handles PKCE flow with cookies so the server callback can read the code verifier
+  if (typeof window !== 'undefined') {
+    supabase = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey);
+  } else {
+    // Fallback for SSR/build time
+    supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        flowType: 'pkce',
+        autoRefreshToken: true,
+        persistSession: false,
+        detectSessionInUrl: false,
+      },
+    });
+  }
 } else {
   supabase = createClient<Database>(
     'https://placeholder.supabase.co',
