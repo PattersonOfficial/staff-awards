@@ -5,12 +5,15 @@ import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/supabase/client';
 import { getCategoryById } from '@/supabase/services/categories';
+import { useToast } from '@/context/ToastContext';
 
 export default function EditCategoryPage() {
   const router = useRouter();
   const params = useParams();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  const { toast } = useToast();
 
   // Form State
   const [title, setTitle] = useState('');
@@ -74,7 +77,7 @@ export default function EditCategoryPage() {
           setStatus(category.status);
           setImageUrl(category.image || '');
         } else {
-          alert('Category not found');
+          toast.error('Category not found');
           router.push('/admin/categories');
         }
       } catch (error) {
@@ -84,7 +87,7 @@ export default function EditCategoryPage() {
       }
     }
     loadCategory();
-  }, [params.id, router]);
+  }, [params.id, router, toast]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) {
@@ -112,7 +115,7 @@ export default function EditCategoryPage() {
       setImageUrl(data.publicUrl);
     } catch (error) {
       console.error('Error uploading image:', error);
-      alert('Error uploading image!');
+      toast.error('Error uploading image!');
     } finally {
       setUploadingImage(false);
     }
@@ -141,11 +144,12 @@ export default function EditCategoryPage() {
 
       if (error) throw error;
 
+      toast.success('Category updated successfully');
       router.push('/admin/categories');
       router.refresh();
     } catch (error) {
       console.error('Error updating category:', error);
-      alert('Error updating category!');
+      toast.error('Error updating category!');
     } finally {
       setSaving(false);
     }

@@ -6,6 +6,7 @@ import {
   updateNominationStatus,
   NominationWithDetails,
 } from '@/supabase/services/nominations';
+import { useToast } from '@/context/ToastContext';
 
 export default function AdminNominationsPage() {
   const [nominations, setNominations] = useState<NominationWithDetails[]>([]);
@@ -13,6 +14,7 @@ export default function AdminNominationsPage() {
   const [filter, setFilter] = useState<
     'all' | 'pending' | 'approved' | 'rejected'
   >('all');
+  const { toast } = useToast();
 
   const fetchNominations = async () => {
     try {
@@ -21,6 +23,7 @@ export default function AdminNominationsPage() {
       setNominations(data);
     } catch (error) {
       console.error('Error fetching nominations:', error);
+      toast.error('Failed to load nominations');
     } finally {
       setLoading(false);
     }
@@ -39,9 +42,10 @@ export default function AdminNominationsPage() {
       setNominations((prev) =>
         prev.map((nom) => (nom.id === id ? { ...nom, status: newStatus } : nom))
       );
+      toast.success(`Nomination ${newStatus} successfully`);
     } catch (error) {
       console.error('Error updating status:', error);
-      alert('Failed to update status');
+      toast.error('Failed to update status');
     }
   };
 
@@ -110,6 +114,9 @@ export default function AdminNominationsPage() {
                     Nominee
                   </th>
                   <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    Nominator
+                  </th>
+                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                     Category
                   </th>
                   <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
@@ -151,6 +158,11 @@ export default function AdminNominationsPage() {
                             {nom.nominee?.department || 'N/A'}
                           </div>
                         </div>
+                      </div>
+                    </td>
+                    <td className='px-6 py-4 whitespace-nowrap'>
+                      <div className='text-sm text-gray-700 dark:text-gray-300'>
+                        {nom.nominator_email || 'Anonymous'}
                       </div>
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap'>

@@ -20,7 +20,9 @@ import {
 import { castVote, hasUserVoted } from '@/supabase/services/votes';
 import { getNominationsByCategory } from '@/supabase/services/nominations';
 import { useAuth } from '@/supabase/hooks/useAuth';
+import { useToast } from '@/context/ToastContext';
 import { AwardCategory, Staff } from '@/types';
+// import { getStaffByEmail } from '@/supabase/services/staff'; // Removed as no longer needed
 
 // Helper to map Supabase Category to AwardCategory
 const mapCategory = (cat: SupabaseCategory): AwardCategory => ({
@@ -52,6 +54,7 @@ export default function CategoryPage() {
   const params = useParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const { toast } = useToast();
 
   const [category, setCategory] = useState<AwardCategory | null>(null);
   const [staffList, setStaffList] = useState<Staff[]>([]);
@@ -202,9 +205,10 @@ export default function CategoryPage() {
       });
       setAlreadyVoted(true);
       setIsSuccessModalOpen(true);
+      toast.success('Vote cast successfully!');
     } catch (error) {
       console.error('Error casting vote:', error);
-      alert('Failed to cast vote.');
+      toast.error('Failed to cast vote.');
     } finally {
       setSubmitting(false);
     }
@@ -255,16 +259,18 @@ export default function CategoryPage() {
       await createNomination({
         category_id: category.id,
         nominee_id: selectedStaffId,
-        nominator_id: user.id,
+        nominator_id: user.id, // Use authenticated User ID directly
+        nominator_email: user.email, // Capture email
         reason: reason,
         status: 'pending',
       });
 
       setIsFormModalOpen(false);
       setIsSuccessModalOpen(true);
+      toast.success('Nomination submitted successfully!');
     } catch (error) {
       console.error('Error nominating:', error);
-      alert('Failed to nominate.');
+      toast.error('Failed to nominate. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -426,10 +432,10 @@ export default function CategoryPage() {
                 <div
                   key={staff.id}
                   onClick={() => setSelectedStaffId(staff.id)}
-                  className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer ${
+                  className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-colors ${
                     selectedStaffId === staff.id
-                      ? 'border-primary bg-primary/5'
-                      : 'border-gray-200 bg-white hover:border-primary/50'
+                      ? 'border-primary bg-primary/5 dark:bg-primary/20'
+                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-primary/50 dark:hover:border-primary/50'
                   }`}>
                   <Avatar
                     src={staff.avatar}

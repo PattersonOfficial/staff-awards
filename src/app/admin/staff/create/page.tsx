@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/supabase/client';
 import { createStaff } from '@/supabase/services/staff';
+import { useToast } from '@/context/ToastContext';
 
 export default function CreateStaffPage() {
   const router = useRouter();
@@ -17,6 +18,8 @@ export default function CreateStaffPage() {
     role: 'staff',
   });
   const [file, setFile] = useState<File | null>(null);
+
+  const { toast } = useToast();
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -68,10 +71,11 @@ export default function CreateStaffPage() {
         avatar: avatarUrl,
       });
 
+      toast.success('Staff member created successfully');
       router.push('/admin/staff');
     } catch (error) {
       console.error('Error creating staff member:', error);
-      alert('Failed to create staff member. Please try again.');
+      toast.error('Failed to create staff member. Please try again.');
     } finally {
       setLoading(false);
     }

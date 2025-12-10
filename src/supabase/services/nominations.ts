@@ -7,7 +7,7 @@ export type NominationUpdate = UpdateTables<'nominations'>;
 
 export type NominationWithDetails = Nomination & {
   nominee: Tables<'staff'>;
-  nominator: Tables<'staff'> | null;
+  // nominator: Tables<'staff'> | null; // Removed because we decoupled from staff
   category: Tables<'categories'>;
 };
 
@@ -31,7 +31,6 @@ export async function getNominations(): Promise<NominationWithDetails[]> {
       `
       *,
       nominee:staff!nominations_nominee_id_fkey(*),
-      nominator:staff!nominations_nominator_id_fkey(*),
       category:categories!nominations_category_id_fkey(*)
     `
     )
@@ -50,7 +49,6 @@ export async function getNominationById(
       `
       *,
       nominee:staff!nominations_nominee_id_fkey(*),
-      nominator:staff!nominations_nominator_id_fkey(*),
       category:categories!nominations_category_id_fkey(*)
     `
     )
@@ -70,7 +68,6 @@ export async function getNominationsByCategory(
       `
       *,
       nominee:staff!nominations_nominee_id_fkey(*),
-      nominator:staff!nominations_nominator_id_fkey(*),
       category:categories!nominations_category_id_fkey(*)
     `
     )
@@ -90,7 +87,6 @@ export async function getNominationsByNominator(
       `
       *,
       nominee:staff!nominations_nominee_id_fkey(*),
-      nominator:staff!nominations_nominator_id_fkey(*),
       category:categories!nominations_category_id_fkey(*)
     `
     )
@@ -113,7 +109,6 @@ export async function getPendingNominations(): Promise<
       `
       *,
       nominee:staff!nominations_nominee_id_fkey(*),
-      nominator:staff!nominations_nominator_id_fkey(*),
       category:categories!nominations_category_id_fkey(*)
     `
     )
@@ -133,7 +128,6 @@ export async function getShortlistedNominations(
       `
       *,
       nominee:staff!nominations_nominee_id_fkey(*),
-      nominator:staff!nominations_nominator_id_fkey(*),
       category:categories!nominations_category_id_fkey(*)
     `
     )

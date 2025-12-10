@@ -134,6 +134,7 @@ export interface Database {
           id: string;
           category_id: string;
           nominator_id: string | null;
+          nominator_email?: string | null; // Added manually
           nominee_id: string;
           reason: string | null;
           status: 'pending' | 'approved' | 'rejected' | 'shortlisted' | string;
@@ -145,6 +146,7 @@ export interface Database {
           id?: string;
           category_id: string;
           nominator_id?: string | null;
+          nominator_email?: string | null; // Added manually
           nominee_id: string;
           reason?: string | null;
           status?: 'pending' | 'approved' | 'rejected' | 'shortlisted' | string;

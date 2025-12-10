@@ -8,6 +8,7 @@ import {
   updateStaff,
   StaffMember,
 } from '@/supabase/services/staff';
+import { useToast } from '@/context/ToastContext';
 import { notFound, useRouter } from 'next/navigation';
 
 export default function EditStaffPage({
@@ -21,6 +22,8 @@ export default function EditStaffPage({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  const { toast } = useToast();
+
   useEffect(() => {
     async function fetchStaff() {
       try {
@@ -29,17 +32,17 @@ export default function EditStaffPage({
         if (data) {
           setStaff(data);
         } else {
-          // If null returned, handled by check below or explicit notFound() call if we prefer
-          // But component render expects staff
+          // If null returned
         }
       } catch (error) {
         console.error('Error fetching staff member:', error);
+        toast.error('Failed to load staff details');
       } finally {
         setLoading(false);
       }
     }
     fetchStaff();
-  }, [id]);
+  }, [id, toast]);
 
   if (loading) {
     return (
@@ -65,10 +68,11 @@ export default function EditStaffPage({
         position: formData.get('position') as string,
         department: formData.get('department') as string,
       });
+      toast.success('Staff updated successfully');
       router.push('/admin/staff');
     } catch (error) {
       console.error('Error updating staff:', error);
-      alert('Failed to update staff member.');
+      toast.error('Failed to update staff member.');
     } finally {
       setSaving(false);
     }

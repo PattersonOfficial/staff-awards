@@ -4,9 +4,11 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getCategoryById, Category } from '@/supabase/services/categories';
-import { getStaff, searchStaff, StaffMember } from '@/supabase/services/staff';
+import { getStaff, StaffMember } from '@/supabase/services/staff';
 import { createNomination } from '@/supabase/services/nominations';
 import Avatar from '@/components/ui/Avatar';
+import { useAuth } from '@/supabase/hooks/useAuth';
+import { useToast } from '@/context/ToastContext';
 
 export default function NominationPage() {
   const params = useParams();
@@ -49,25 +51,32 @@ export default function NominationPage() {
       s.department?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const { user } = useAuth();
+  const { toast } = useToast();
+
   const handleSubmit = async () => {
     if (!selectedNominee || !reason) return;
 
-    // TODO: Get actual logged in user (nominator). For now, we omit nominator_id or use a mock if strictly required by RLS (but we disabled RLS)
-    // In a real app with auth, we'd use useAuth().user.id
+    if (!user || !user.email) {
+      toast.error('You must be logged in to submit a nomination.');
+      return;
+    }
 
     setSubmitting(true);
     try {
       await createNomination({
         category_id: categoryId,
         nominee_id: selectedNominee.id,
-        nominator_id: null, // Anonymous for now, or user ID if available
+        nominator_id: user.id,
+        nominator_email: user.email,
         reason: reason,
         status: 'pending',
       });
       setSubmitted(true);
+      toast.success('Nomination submitted successfully!');
     } catch (error) {
       console.error('Error submitting nomination:', error);
-      alert('Failed to submit nomination. Please try again.');
+      toast.error('Failed to submit nomination. Please try again.');
     } finally {
       setSubmitting(false);
     }

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/supabase/client';
 import { createCategory } from '@/supabase/services/categories';
+import { useToast } from '@/context/ToastContext';
 
 export default function CreateCategoryPage() {
   const router = useRouter();
@@ -20,6 +21,8 @@ export default function CreateCategoryPage() {
     status: 'draft',
   });
   const [file, setFile] = useState<File | null>(null);
+
+  const { toast } = useToast();
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -78,10 +81,11 @@ export default function CreateCategoryPage() {
         voting_end: formData.votingEnd || null,
       });
 
+      toast.success('Category created successfully');
       router.push('/admin/categories');
     } catch (error) {
       console.error('Error creating category:', error);
-      alert('Failed to create category. Please try again.');
+      toast.error('Failed to create category. Please try again.');
     } finally {
       setLoading(false);
     }

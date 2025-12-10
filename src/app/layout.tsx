@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
+import { ToastProvider } from '@/context/ToastContext';
 
 const inter = Inter({
   variable: '--font-inter',
@@ -29,7 +30,7 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} antialiased`}>
         <ThemeProvider attribute='class' defaultTheme='system' enableSystem>
-          {children}
+          <ToastProvider>{children}</ToastProvider>
         </ThemeProvider>
       </body>
     </html>
