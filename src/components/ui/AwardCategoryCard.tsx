@@ -19,7 +19,7 @@ export default function AwardCategoryCard({
         <h3 className='text-lg font-bold text-[#212529] dark:text-text-dark-primary'>
           {category.title}
         </h3>
-        <p className='mt-1 flex-grow text-sm text-[#6c757d] dark:text-text-dark-secondary'>
+        <p className='mt-1 grow text-sm text-[#6c757d] dark:text-text-dark-secondary'>
           {category.description}
         </p>
         <div className='my-4 flex flex-wrap gap-2'>
@@ -45,7 +45,7 @@ export default function AwardCategoryCard({
         </div>
         <Link
           href={`/categories/${category.id}`}
-          className='mt-5 w-full rounded-lg bg-[#0A4D68] py-2.5 text-sm font-semibold text-white text-center transition-colors hover:opacity-90'>
+          className='mt-5 w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-white text-center transition-colors hover:opacity-90'>
           Nominate Now
         </Link>
       </div>

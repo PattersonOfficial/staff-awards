@@ -1,7 +1,7 @@
 'use client';
 
 import { use, useEffect, useState } from 'react';
-import AdminHeader from '@/components/layout/AdminHeader';
+import Image from 'next/image';
 import Link from 'next/link';
 import {
   getStaffById,
@@ -165,7 +165,7 @@ export default function EditStaffPage({
                     Profile Photo
                   </p>
                   <div className='mt-2 flex items-center gap-6'>
-                    <img
+                    <Image
                       src={
                         staff.avatar ||
                         `https://ui-avatars.com/api/?name=${encodeURIComponent(
@@ -173,7 +173,10 @@ export default function EditStaffPage({
                         )}&background=random`
                       }
                       alt={staff.name}
+                      width={80}
+                      height={80}
                       className='h-20 w-20 rounded-full object-cover border border-gray-200 dark:border-gray-700'
+                      unoptimized
                     />
                     <div className='flex-1 flex justify-center rounded-lg border border-dashed border-gray-400 dark:border-gray-600 px-6 py-8'>
                       <div className='text-center'>

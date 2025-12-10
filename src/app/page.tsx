@@ -92,14 +92,14 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className='flex items-center justify-center min-h-screen bg-[#F8F9FA] dark:bg-background-dark'>
+      <div className='flex items-center justify-center min-h-screen bg-background-light dark:bg-background-dark'>
         <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary'></div>
       </div>
     );
   }
 
   return (
-    <div className='relative flex min-h-screen w-full flex-col bg-[#F8F9FA] dark:bg-background-dark'>
+    <div className='relative flex min-h-screen w-full flex-col bg-background-light dark:bg-background-dark'>
       <Header />
       <main className='flex w-full flex-1 flex-col items-center px-4 sm:px-6 lg:px-8 py-8 md:py-12'>
         <div className='w-full max-w-7xl'>
@@ -158,7 +158,7 @@ export default function Home() {
                   onClick={() => setViewMode('list')}
                   className={`p-2 pb-0! rounded-md transition-colors cursor-pointer ${
                     viewMode === 'list'
-                      ? 'bg-[#0A4D68] text-white'
+                      ? 'bg-primary text-white'
                       : 'text-[#6c757d] dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                   title='List view'>
@@ -168,7 +168,7 @@ export default function Home() {
                   onClick={() => setViewMode('grid')}
                   className={`p-2 pb-0! rounded-md transition-colors cursor-pointer ${
                     viewMode === 'grid'
-                      ? 'bg-[#0A4D68] text-white'
+                      ? 'bg-primary text-white'
                       : 'text-[#6c757d] dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                   title='Grid view'>
@@ -212,7 +212,7 @@ export default function Home() {
                       </div>
                       <Link
                         href={`/categories/${category.id}`}
-                        className='sm:ml-4 rounded-lg bg-[#0A4D68] px-6 py-2.5 text-sm font-semibold text-white text-center transition-colors hover:opacity-90 whitespace-nowrap cursor-pointer'>
+                        className='sm:ml-4 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white text-center transition-colors hover:opacity-90 whitespace-nowrap cursor-pointer'>
                         Nominate Now
                       </Link>
                     </div>
