@@ -4,6 +4,8 @@ import type { Tables } from '../types';
 export type AuthUser = {
   id: string;
   email: string;
+  fullName?: string;
+  avatarUrl?: string;
   staff?: Tables<'staff'>;
 };
 
@@ -45,6 +47,7 @@ export async function getSession() {
 // Get current user
 export async function getCurrentUser() {
   const { data, error } = await supabase.auth.getUser();
+  console.log({ data });
   if (error) throw error;
   return data.user;
 }
@@ -63,6 +66,8 @@ export async function getCurrentUserWithProfile(): Promise<AuthUser | null> {
   return {
     id: user.id,
     email: user.email,
+    fullName: user.user_metadata?.full_name || user.user_metadata?.name,
+    avatarUrl: user.user_metadata?.avatar_url || user.user_metadata?.picture,
     staff: staff || undefined,
   };
 }
@@ -112,7 +117,10 @@ export async function signInWithMagicLink(email: string) {
 
 // OAuth sign in (e.g., Google, Microsoft)
 export async function signInWithOAuth(provider: 'google' | 'azure') {
-  const options: { redirectTo: string; queryParams?: { [key: string]: string } } = {
+  const options: {
+    redirectTo: string;
+    queryParams?: { [key: string]: string };
+  } = {
     redirectTo: `${window.location.origin}/auth/callback`,
   };
 
