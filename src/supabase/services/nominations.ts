@@ -197,11 +197,71 @@ export async function getNominationCounts() {
     .select('*', { count: 'exact', head: true })
     .eq('status', 'shortlisted');
 
-  return {
-    total: total || 0,
-    pending: pending || 0,
-    approved: approved || 0,
+    rejected: rejected || 0,
     rejected: rejected || 0,
     shortlisted: shortlisted || 0,
   };
+} // End of getNominationCounts function
+
+export interface NominationLeaderboardItem {
+  nominee: Tables<'staff'>;
+  category: Tables<'categories'>;
+  count: number;
+}
+
+export async function getNominationLeaderboard(): Promise<
+  NominationLeaderboardItem[]
+> {
+  const { data, error } = await supabase
+    .from('nominations')
+    .select(
+      `
+      nominee_id,
+      category_id,
+      nominee:staff!nominations_nominee_id_fkey(*),
+      category:categories!nominations_category_id_fkey(*)
+    `
+    )
+    .not('status', 'eq', 'rejected');
+
+  if (error) throw error;
+
+  const rawData = data as unknown as {
+    nominee_id: string;
+    category_id: string;
+    nominee: Tables<'staff'>;
+    category: Tables<'categories'>;
+  }[];
+
+  // Key: nomineeId_categoryId
+  const counts = new Map<string, number>();
+  const metaMap = new Map<
+    string,
+    { nominee: Tables<'staff'>; category: Tables<'categories'> }
+  >();
+
+  rawData.forEach((item) => {
+    const key = `${item.nominee_id}_${item.category_id}`;
+    if (!item.nominee_id || !item.category_id) return;
+
+    counts.set(key, (counts.get(key) || 0) + 1);
+    if (!metaMap.has(key)) {
+      metaMap.set(key, { nominee: item.nominee, category: item.category });
+    }
+  });
+
+  const leaderboard: NominationLeaderboardItem[] = [];
+  counts.forEach((count, key) => {
+    const meta = metaMap.get(key);
+    if (meta) {
+      leaderboard.push({
+        nominee: meta.nominee,
+        category: meta.category,
+        count,
+      });
+    }
+  });
+
+  // Sort by count descending
+  return leaderboard.sort((a, b) => b.count - a.count);
 }

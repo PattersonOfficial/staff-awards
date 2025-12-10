@@ -5,6 +5,7 @@ import {
   getNominations,
   updateNominationStatus,
   NominationWithDetails,
+  getNominationLeaderboard,
 } from '@/supabase/services/nominations';
 import { useToast } from '@/context/ToastContext';
 
@@ -16,11 +17,46 @@ export default function AdminNominationsPage() {
   >('all');
   const { toast } = useToast();
 
+  const [recommendations, setRecommendations] = useState<
+    { categoryTitle: string; items: typeof leaderboard }[]
+  >([]);
+
+  const processRecommendations = (
+    data: { nominee: any; category: any; count: number }[]
+  ) => {
+    const grouped = new Map<string, typeof data>();
+    data.forEach((item) => {
+      const catId = item.category?.id;
+      if (!catId) return;
+      if (!grouped.has(catId)) grouped.set(catId, []);
+      grouped.get(catId)?.push(item);
+    });
+
+    const result: { categoryTitle: string; items: typeof data }[] = [];
+    grouped.forEach((items, catId) => {
+      // Sort desc within category (already mostly sorted but ensure)
+      items.sort((a, b) => b.count - a.count);
+      // Take top 3
+      if (items.length > 0) {
+        result.push({
+          categoryTitle: items[0].category.title,
+          items: items.slice(0, 3), // Top 3 per category
+        });
+      }
+    });
+    return result;
+  };
+
   const fetchNominations = async () => {
     try {
       setLoading(true);
-      const data = await getNominations();
+      const [data, leaderboardData] = await Promise.all([
+        getNominations(),
+        getNominationLeaderboard(),
+      ]);
       setNominations(data);
+      setLeaderboard(leaderboardData);
+      setRecommendations(processRecommendations(leaderboardData));
     } catch (error) {
       console.error('Error fetching nominations:', error);
       toast.error('Failed to load nominations');
@@ -96,7 +132,67 @@ export default function AdminNominationsPage() {
           ))}
         </div>
 
-        {/* Table */}
+        {/* Recommendations Section */}
+        {recommendations.length > 0 && (
+          <div className='mb-8'>
+            <h2 className='text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2'>
+              <span className='material-symbols-outlined text-yellow-500'>
+                stars
+              </span>
+              Recommended for Shortlisting
+            </h2>
+            <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+              {recommendations.map((rec) => (
+                <div
+                  key={rec.categoryTitle}
+                  className='rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 shadow-sm'>
+                  <h3 className='font-bold text-gray-900 dark:text-white mb-4 border-b border-gray-100 dark:border-gray-700 pb-2'>
+                    {rec.categoryTitle}
+                  </h3>
+                  <div className='space-y-4'>
+                    {rec.items.map((item, index) => (
+                      <div
+                        key={item.nominee.id}
+                        className='flex items-center justify-between'>
+                        <div className='flex items-center gap-3'>
+                          <div
+                            className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
+                              index === 0
+                                ? 'bg-yellow-100 text-yellow-700'
+                                : 'bg-gray-100 text-gray-600'
+                            }`}>
+                            {index + 1}
+                          </div>
+                          {item.nominee.avatar ? (
+                            <img
+                              src={item.nominee.avatar}
+                              className='w-8 h-8 rounded-full object-cover'
+                              alt=''
+                            />
+                          ) : (
+                            <div className='w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center'>
+                              <span className='material-symbols-outlined text-[16px] text-gray-400'>
+                                person
+                              </span>
+                            </div>
+                          )}
+                          <span className='text-sm font-medium text-gray-900 dark:text-white'>
+                            {item.nominee.name}
+                          </span>
+                        </div>
+                        <span className='text-xs font-semibold bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full text-gray-600 dark:text-gray-300'>
+                          {item.count} noms
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Filters and Table */}
         <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow'>
           {loading ? (
             <div className='flex p-12 justify-center'>
