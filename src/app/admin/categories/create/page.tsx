@@ -1,15 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/supabase/client';
 import { createCategory } from '@/supabase/services/categories';
+import { getDepartments, Department } from '@/supabase/services/departments';
 import { useToast } from '@/context/ToastContext';
 
 export default function CreateCategoryPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -23,6 +25,19 @@ export default function CreateCategoryPage() {
   const [file, setFile] = useState<File | null>(null);
 
   const { toast } = useToast();
+
+  useEffect(() => {
+    loadDepartments();
+  }, []);
+
+  async function loadDepartments() {
+    try {
+      const data = await getDepartments();
+      setDepartments(data);
+    } catch (error) {
+      console.error('Error loading departments:', error);
+    }
+  }
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -160,6 +175,36 @@ export default function CreateCategoryPage() {
                     onChange={handleInputChange}
                     className='appearance-none block w-full min-w-0 resize-y overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark focus:border-primary h-28 placeholder:text-gray-400 p-4 text-base font-normal leading-normal'
                     placeholder='Describe what this award recognizes...'></textarea>
+                </label>
+
+                {/* Department (Optional) */}
+                <label className='flex flex-col'>
+                  <p className='text-gray-800 dark:text-gray-200 text-base font-medium leading-normal pb-2'>
+                    Department
+                  </p>
+                  <div className='relative'>
+                    <select
+                      name='department'
+                      value={formData.department}
+                      onChange={handleInputChange}
+                      className='appearance-none block w-full min-w-0 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark focus:border-primary h-12 px-4 pr-10 text-base font-normal leading-normal'>
+                      <option value=''>All Departments</option>
+                      {departments.map((dept) => (
+                        <option key={dept.id} value={dept.name}>
+                          {dept.name}
+                        </option>
+                      ))}
+                    </select>
+                    <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500'>
+                      <span className='material-symbols-outlined'>
+                        expand_more
+                      </span>
+                    </div>
+                  </div>
+                  <p className='mt-1 text-sm text-gray-500'>
+                    If selected, this award will be restricted to staff in this
+                    department.
+                  </p>
                 </label>
 
                 {/* File Uploader */}

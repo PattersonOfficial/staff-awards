@@ -1,15 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/supabase/client';
 import { createStaff } from '@/supabase/services/staff';
+import { getDepartments, Department } from '@/supabase/services/departments';
 import { useToast } from '@/context/ToastContext';
 
 export default function CreateStaffPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -17,6 +19,19 @@ export default function CreateStaffPage() {
     position: '',
     role: 'staff',
   });
+
+  useEffect(() => {
+    loadDepartments();
+  }, []);
+
+  async function loadDepartments() {
+    try {
+      const data = await getDepartments();
+      setDepartments(data);
+    } catch (error) {
+      console.error('Error loading departments:', error);
+    }
+  }
   const [file, setFile] = useState<File | null>(null);
 
   const { toast } = useToast();
@@ -176,14 +191,26 @@ export default function CreateStaffPage() {
                   <p className='text-gray-800 dark:text-gray-200 text-base font-medium leading-normal pb-2'>
                     Department
                   </p>
-                  <input
-                    required
-                    name='department'
-                    value={formData.department}
-                    onChange={handleInputChange}
-                    className='appearance-none block w-full min-w-0 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark focus:border-primary h-12 placeholder:text-gray-400 px-4 text-base font-normal leading-normal'
-                    placeholder='e.g., Engineering'
-                  />
+                  <div className='relative'>
+                    <select
+                      required
+                      name='department'
+                      value={formData.department}
+                      onChange={handleInputChange}
+                      className='appearance-none block w-full min-w-0 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark focus:border-primary h-12 px-4 pr-10 text-base font-normal leading-normal'>
+                      <option value=''>Select a department</option>
+                      {departments.map((dept) => (
+                        <option key={dept.id} value={dept.name}>
+                          {dept.name}
+                        </option>
+                      ))}
+                    </select>
+                    <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500'>
+                      <span className='material-symbols-outlined'>
+                        expand_more
+                      </span>
+                    </div>
+                  </div>
                 </label>
               </div>
 

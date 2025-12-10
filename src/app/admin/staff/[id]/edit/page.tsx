@@ -1,5 +1,3 @@
-'use client';
-
 import { use, useEffect, useState } from 'react';
 import AdminHeader from '@/components/layout/AdminHeader';
 import Link from 'next/link';
@@ -8,6 +6,7 @@ import {
   updateStaff,
   StaffMember,
 } from '@/supabase/services/staff';
+import { getDepartments, Department } from '@/supabase/services/departments';
 import { useToast } from '@/context/ToastContext';
 import { notFound, useRouter } from 'next/navigation';
 
@@ -21,27 +20,33 @@ export default function EditStaffPage({
   const [staff, setStaff] = useState<StaffMember | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [departments, setDepartments] = useState<Department[]>([]);
 
   const { toast } = useToast();
 
   useEffect(() => {
-    async function fetchStaff() {
+    async function fetchData() {
       try {
         setLoading(true);
-        const data = await getStaffById(id);
-        if (data) {
-          setStaff(data);
+        const [staffData, departmentsData] = await Promise.all([
+          getStaffById(id),
+          getDepartments(),
+        ]);
+
+        if (staffData) {
+          setStaff(staffData);
         } else {
           // If null returned
         }
+        setDepartments(departmentsData);
       } catch (error) {
-        console.error('Error fetching staff member:', error);
-        toast.error('Failed to load staff details');
+        console.error('Error fetching data:', error);
+        toast.error('Failed to load data');
       } finally {
         setLoading(false);
       }
     }
-    fetchStaff();
+    fetchData();
   }, [id, toast]);
 
   if (loading) {
@@ -77,20 +82,6 @@ export default function EditStaffPage({
       setSaving(false);
     }
   };
-
-  const departments = [
-    'Business Intelligence',
-    'Customer Service',
-    'Engineering',
-    'Finance',
-    'Human Resources',
-    'IT Security',
-    'Marketing',
-    'Operations',
-    'Product',
-    'Sales',
-    'Technology Department',
-  ];
 
   return (
     <main className='flex flex-1 flex-col overflow-y-auto bg-background-light dark:bg-background-dark'>
@@ -234,8 +225,8 @@ export default function EditStaffPage({
                         className='appearance-none block w-full min-w-0 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark focus:border-primary h-12 px-4 pr-10 text-base font-normal leading-normal'
                         defaultValue={staff?.department ?? ''}>
                         {departments.map((dept) => (
-                          <option key={dept} value={dept}>
-                            {dept}
+                          <option key={dept.id} value={dept.name}>
+                            {dept.name}
                           </option>
                         ))}
                       </select>

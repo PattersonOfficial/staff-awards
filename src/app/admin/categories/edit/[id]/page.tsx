@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/supabase/client';
 import { getCategoryById } from '@/supabase/services/categories';
+import { getDepartments, Department } from '@/supabase/services/departments';
 import { useToast } from '@/context/ToastContext';
 
 export default function EditCategoryPage() {
@@ -12,6 +13,7 @@ export default function EditCategoryPage() {
   const params = useParams();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [departments, setDepartments] = useState<Department[]>([]);
 
   const { toast } = useToast();
 
@@ -36,7 +38,13 @@ export default function EditCategoryPage() {
     async function loadCategory() {
       try {
         const id = params.id as string;
-        const category = await getCategoryById(id);
+        const [category, departmentsData] = await Promise.all([
+          getCategoryById(id),
+          getDepartments(),
+        ]);
+
+        setDepartments(departmentsData);
+
         if (category) {
           setTitle(category.title);
           setDescription(category.description || '');
@@ -239,12 +247,15 @@ export default function EditCategoryPage() {
                 value={department}
                 onChange={(e) => setDepartment(e.target.value)}
                 className='mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm'>
-                <option value='All Departments'>All Departments</option>
-                <option value='Engineering'>Engineering</option>
-                <option value='Product'>Product</option>
-                <option value='Sales'>Sales</option>
-                <option value='Marketing'>Marketing</option>
-                <option value='HR'>HR</option>
+                <option value=''>All Departments</option>
+                <option value='All Departments'>
+                  All Departments (Explicit)
+                </option>
+                {departments.map((dept) => (
+                  <option key={dept.id} value={dept.name}>
+                    {dept.name}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

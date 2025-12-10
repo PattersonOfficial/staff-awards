@@ -80,6 +80,12 @@ export default function AdminSidebar() {
           <span className='text-sm font-medium'>Staff</span>
         </Link>
         <Link
+          href='/admin/departments'
+          className={getLinkClass('/admin/departments')}>
+          <span className='material-symbols-outlined text-xl'>domain</span>
+          <span className='text-sm font-medium'>Departments</span>
+        </Link>
+        <Link
           href='/admin/nominations'
           className={getLinkClass('/admin/nominations')}>
           <span className='material-symbols-outlined text-xl'>rate_review</span>
