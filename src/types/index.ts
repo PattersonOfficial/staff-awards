@@ -19,7 +19,7 @@ export interface Staff {
   email: string;
   position: string;
   department: string;
-  avatar: string;
+  avatar: string | null;
 }
 
 export interface Nomination {

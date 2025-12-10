@@ -17,11 +17,14 @@ export default function CreateCategoryPage() {
     nominationEnd: '',
     votingStart: '',
     votingEnd: '',
+    status: 'draft',
   });
   const [file, setFile] = useState<File | null>(null);
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -67,7 +70,7 @@ export default function CreateCategoryPage() {
         image: imageUrl,
         department: formData.department || null,
         type: 'Individual Award', // Default for now
-        status: 'draft',
+        status: formData.status as 'draft' | 'published' | 'closed',
         nomination_deadline: formData.nominationEnd, // Backward compat
         shortlisting_start: null, // Not in form yet
         shortlisting_end: null, // Not in form yet
@@ -187,12 +190,39 @@ export default function CreateCategoryPage() {
               </div>
             </div>
 
-            {/* Section 2: Timeline */}
+            {/* Section 2: Status & Timeline */}
             <div>
               <h3 className='text-gray-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] pb-4 border-b border-gray-200 dark:border-gray-800'>
-                Timeline
+                Status & Timeline
               </h3>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 mt-6'>
+                {/* Status */}
+                <div className='space-y-6 md:col-span-2'>
+                  <label className='flex flex-col'>
+                    <p className='text-gray-800 dark:text-gray-200 text-base font-medium leading-normal pb-2'>
+                      Initial Status
+                    </p>
+                    <div className='relative'>
+                      <select
+                        name='status'
+                        value={formData.status}
+                        onChange={handleInputChange}
+                        className='appearance-none block w-full min-w-0 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark focus:border-primary h-12 px-4 pr-10 text-base font-normal leading-normal'>
+                        <option value='draft'>Draft (Hidden from users)</option>
+                        <option value='published'>
+                          Published (Visible to users)
+                        </option>
+                        <option value='closed'>Closed (Archived)</option>
+                      </select>
+                      <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500'>
+                        <span className='material-symbols-outlined'>
+                          expand_more
+                        </span>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+
                 {/* Nomination Period */}
                 <div className='space-y-6'>
                   <p className='text-gray-800 dark:text-gray-200 text-base font-medium'>

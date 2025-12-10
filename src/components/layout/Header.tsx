@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/supabase/hooks/useAuth';
 import LogoutConfirmationModal from '@/components/ui/LogoutConfirmationModal';
+import Avatar from '@/components/ui/Avatar';
 
 export default function Header() {
   const router = useRouter();
@@ -97,17 +98,13 @@ export default function Header() {
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className='flex items-center gap-2 focus:outline-none cursor-pointer'
                   title={userName}>
-                  {avatarUrl ? (
-                    <div
-                      className='bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-gray-200 dark:border-gray-700'
-                      style={{ backgroundImage: `url(${avatarUrl})` }}></div>
-                  ) : (
-                    <div className='flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white font-medium'>
-                      {userName.charAt(0).toUpperCase()}
-                    </div>
-                  )}
+                  <Avatar
+                    src={avatarUrl}
+                    name={userName}
+                    className='size-10 border border-gray-200 dark:border-gray-700'
+                    textClassName='text-base'
+                  />
                 </button>
-
                 {isDropdownOpen && (
                   <div className='absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-card-dark shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none'>
                     <div className='py-1'>

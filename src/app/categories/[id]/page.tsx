@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/layout/Header';
+import Avatar from '@/components/ui/Avatar';
 import StaffCard from '@/components/ui/StaffCard';
 import SearchBar from '@/components/ui/SearchBar';
 import NominationFormModal from '@/components/ui/NominationFormModal';
@@ -44,9 +45,7 @@ const mapStaff = (s: SupabaseStaff): Staff => ({
   email: s?.email,
   position: s?.position ?? '',
   department: s?.department ?? '',
-  avatar:
-    s?.avatar ??
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(s?.name ?? 'User')}`,
+  avatar: s?.avatar || null,
 });
 
 export default function CategoryPage() {
@@ -419,6 +418,9 @@ export default function CategoryPage() {
               ))}
             </div>
           ) : (
+            // ... existing imports ...
+
+            // ... inside component ...
             <div className='flex flex-col gap-3'>
               {filteredStaff.map((staff) => (
                 <div
@@ -429,9 +431,11 @@ export default function CategoryPage() {
                       ? 'border-primary bg-primary/5'
                       : 'border-gray-200 bg-white hover:border-primary/50'
                   }`}>
-                  <img
+                  <Avatar
                     src={staff.avatar}
-                    className='w-12 h-12 rounded-full object-cover'
+                    name={staff.name}
+                    className='w-12 h-12'
+                    textClassName='text-lg'
                   />
                   <div>
                     <h4 className='font-bold text-gray-900 dark:text-white'>

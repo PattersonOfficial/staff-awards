@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { getCategoryById, Category } from '@/supabase/services/categories';
 import { getStaff, searchStaff, StaffMember } from '@/supabase/services/staff';
 import { createNomination } from '@/supabase/services/nominations';
+import Avatar from '@/components/ui/Avatar';
 
 export default function NominationPage() {
   const params = useParams();
@@ -135,21 +136,12 @@ export default function NominationPage() {
                   ? 'border-2 border-primary bg-white ring-4 ring-primary/20 dark:bg-gray-800'
                   : 'border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-800'
               }`}>
-              <div className='mb-4 h-24 w-24 overflow-hidden rounded-full bg-gray-100'>
-                {staff.avatar ? (
-                  <img
-                    src={staff.avatar}
-                    alt={staff.name}
-                    className='h-full w-full object-cover'
-                  />
-                ) : (
-                  <div className='flex h-full w-full items-center justify-center text-gray-400'>
-                    <span className='material-symbols-outlined text-4xl'>
-                      person
-                    </span>
-                  </div>
-                )}
-              </div>
+              <Avatar
+                src={staff.avatar}
+                name={staff.name}
+                className='mb-4 h-24 w-24'
+                textClassName='text-3xl'
+              />
               <h3 className='text-center text-lg font-bold text-gray-900 dark:text-white'>
                 {staff.name}
               </h3>

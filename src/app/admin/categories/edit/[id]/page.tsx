@@ -245,56 +245,73 @@ export default function EditCategoryPage() {
             </div>
           </div>
 
-          {/* Timeline */}
-          <div className='pt-4 border-t border-gray-100 dark:border-gray-700'>
-            <h3 className='text-sm font-bold text-gray-900 dark:text-white mb-4'>
-              Timeline
+          {/* Status & Timeline */}
+          <div className='pt-4 border-t border-gray-100 dark:border-gray-700 space-y-6'>
+            <h3 className='text-lg font-bold text-gray-900 dark:text-white'>
+              Status & Timeline
             </h3>
+
+            {/* Status */}
+            <div>
+              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
+                Current Status
+              </label>
+              <div className='relative mt-1'>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className='appearance-none block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm pr-10'>
+                  <option value='draft'>Draft (Hidden from users)</option>
+                  <option value='published'>
+                    Published (Visible to users)
+                  </option>
+                  <option value='closed'>Closed (Archived)</option>
+                </select>
+                <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500'>
+                  <span className='material-symbols-outlined text-sm'>
+                    expand_more
+                  </span>
+                </div>
+              </div>
+              <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+                Control the visibility of this category.
+              </p>
+            </div>
+
             <div className='grid grid-cols-1 gap-6 sm:grid-cols-2'>
               <div>
-                <label className='block text-xs font-medium text-gray-500 uppercase'>
+                <label className='block text-xs font-medium text-gray-500 uppercase mb-1'>
                   Nomination Deadline
                 </label>
                 <input
                   type='date'
                   value={nominationDeadline}
                   onChange={(e) => setNominationDeadline(e.target.value)}
-                  className='mt-1 block w-full rounded-md border text-sm border-gray-300 p-2'
+                  className='block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm'
                 />
               </div>
+
+              {/* Voting Period */}
               <div>
-                <label className='block text-xs font-medium text-gray-500 uppercase'>
-                  Status
-                </label>
-                <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  className='mt-1 block w-full rounded-md border p-2 text-sm border-gray-300'>
-                  <option value='draft'>Draft</option>
-                  <option value='published'>Published</option>
-                  <option value='closed'>Closed</option>
-                </select>
-              </div>
-              <div>
-                <label className='block text-xs font-medium text-gray-500 uppercase'>
+                <label className='block text-xs font-medium text-gray-500 uppercase mb-1'>
                   Voting Start
                 </label>
                 <input
                   type='date'
                   value={votingStart}
                   onChange={(e) => setVotingStart(e.target.value)}
-                  className='mt-1 block w-full rounded-md border text-sm border-gray-300 p-2'
+                  className='block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm'
                 />
               </div>
               <div>
-                <label className='block text-xs font-medium text-gray-500 uppercase'>
+                <label className='block text-xs font-medium text-gray-500 uppercase mb-1'>
                   Voting End
                 </label>
                 <input
                   type='date'
                   value={votingEnd}
                   onChange={(e) => setVotingEnd(e.target.value)}
-                  className='mt-1 block w-full rounded-md border text-sm border-gray-300 p-2'
+                  className='block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm'
                 />
               </div>
             </div>

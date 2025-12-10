@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import ConfirmationModal from '@/components/ui/ConfirmationModal';
 import { getStaff, deleteStaff, StaffMember } from '@/supabase/services/staff';
 
 export default function AdminStaffPage() {
@@ -9,30 +10,43 @@ export default function AdminStaffPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const fetchStaff = async () => {
+  // Delete Modal
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [staffToDelete, setStaffToDelete] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadStaff();
+  }, []);
+
+  async function loadStaff() {
     try {
       setLoading(true);
       const data = await getStaff();
-      setStaffMembers(data);
+      setStaffMembers(data || []);
     } catch (error) {
-      console.error('Error fetching staff:', error);
+      console.error('Error loading staff:', error);
     } finally {
       setLoading(false);
     }
+  }
+
+  const handleDeleteClick = (id: string) => {
+    setStaffToDelete(id);
+    setDeleteModalOpen(true);
   };
 
-  useEffect(() => {
-    fetchStaff();
-  }, []);
+  const handleConfirmDelete = async () => {
+    if (!staffToDelete) return;
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this staff member?')) {
-      try {
-        await deleteStaff(id);
-        setStaffMembers(staffMembers.filter((s) => s.id !== id));
-      } catch (error) {
-        console.error('Error deleting staff:', error);
-      }
+    try {
+      await deleteStaff(staffToDelete);
+      setStaffMembers(staffMembers.filter((s) => s.id !== staffToDelete));
+    } catch (error) {
+      console.error('Error deleting staff:', error);
+      alert('Failed to delete staff member');
+    } finally {
+      setDeleteModalOpen(false);
+      setStaffToDelete(null);
     }
   };
 
@@ -180,7 +194,7 @@ export default function AdminStaffPage() {
                               </span>
                             </Link>
                             <button
-                              onClick={() => handleDelete(staff.id)}
+                              onClick={() => handleDeleteClick(staff.id)}
                               className='p-1 text-gray-400 hover:text-red-500 transition-colors'
                               title='Delete'>
                               <span className='material-symbols-outlined text-lg'>
@@ -198,6 +212,15 @@ export default function AdminStaffPage() {
           </div>
         </div>
       </div>
+      <ConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title='Delete Staff Member'
+        message='Are you sure you want to remove this staff member? This action cannot be undone.'
+        isDangerous={true}
+        confirmText='Delete'
+      />
     </main>
   );
 }

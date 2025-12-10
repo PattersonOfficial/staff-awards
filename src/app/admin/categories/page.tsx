@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import ConfirmationModal from '@/components/ui/ConfirmationModal';
 import {
   getCategories,
   deleteCategory,
@@ -14,30 +15,43 @@ export default function AdminCategoriesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  const fetchCategories = async () => {
+  // Delete Modal State
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  async function loadCategories() {
     try {
-      setLoading(true);
+      setLoading(true); // Keep this here to show loading state on initial fetch
       const data = await getCategories();
-      setCategories(data);
+      setCategories(data || []);
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      console.error('Error loading categories:', error);
     } finally {
       setLoading(false);
     }
+  }
+
+  const handleDeleteClick = (id: string) => {
+    setCategoryToDelete(id);
+    setDeleteModalOpen(true);
   };
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
+  const handleConfirmDelete = async () => {
+    if (!categoryToDelete) return;
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this category?')) {
-      try {
-        await deleteCategory(id);
-        setCategories(categories.filter((cat) => cat.id !== id));
-      } catch (error) {
-        console.error('Error deleting category:', error);
-      }
+    try {
+      await deleteCategory(categoryToDelete);
+      setCategories(categories.filter((c) => c.id !== categoryToDelete));
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      alert('Failed to delete category');
+    } finally {
+      setDeleteModalOpen(false);
+      setCategoryToDelete(null);
     }
   };
 
@@ -191,10 +205,9 @@ export default function AdminCategoriesPage() {
                               </span>
                             </Link>
                             <button
-                              onClick={() => handleDelete(category.id)}
-                              className='p-1 text-gray-400 hover:text-red-500 transition-colors'
-                              title='Delete'>
-                              <span className='material-symbols-outlined text-lg'>
+                              onClick={() => handleDeleteClick(category.id)}
+                              className='p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors'>
+                              <span className='material-symbols-outlined'>
                                 delete
                               </span>
                             </button>
@@ -209,6 +222,15 @@ export default function AdminCategoriesPage() {
           </div>
         </div>
       </div>
+      <ConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title='Delete Category'
+        message='Are you sure you want to delete this category? This action cannot be undone.'
+        isDangerous={true}
+        confirmText='Delete'
+      />
     </main>
   );
 }
