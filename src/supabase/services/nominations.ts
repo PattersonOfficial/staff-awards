@@ -14,13 +14,34 @@ export type NominationWithDetails = Nomination & {
 export async function createNomination(
   nomination: NominationInsert
 ): Promise<Nomination> {
+  // Check for existing nomination first to return clean error
+  const { data: existing } = await supabase
+    .from('nominations')
+    .select('id')
+    .eq('nominator_id', nomination.nominator_id)
+    .eq('category_id', nomination.category_id)
+    .eq('nominee_id', nomination.nominee_id)
+    .maybeSingle();
+
+  if (existing) {
+    throw new Error('You have already nominated this person for this category.');
+  }
+
   const { data, error } = await supabase
     .from('nominations')
     .insert(nomination as never)
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    // Fallback for race conditions
+    if (error.code === '23505') {
+      throw new Error(
+        'You have already nominated this person for this category.'
+      );
+    }
+    throw error;
+  }
   return data as Nomination;
 }
 
@@ -197,7 +218,6 @@ export async function getNominationCounts() {
     .select('*', { count: 'exact', head: true })
     .eq('status', 'shortlisted');
 
-    rejected: rejected || 0,
     rejected: rejected || 0,
     shortlisted: shortlisted || 0,
   };
