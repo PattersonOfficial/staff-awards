@@ -39,7 +39,7 @@ export default function LoginPage() {
         <div className='mt-8 space-y-4'>
           <button
             onClick={handleGoogleLogin}
-            className='flex w-full items-center justify-center gap-3 rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-gray-800 px-4 py-3 text-sm font-medium text-text-light-primary dark:text-text-dark-primary transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-900'>
+            className='flex w-full cursor-pointer items-center justify-center gap-3 rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-gray-800 px-4 py-3 text-sm font-medium text-text-light-primary dark:text-text-dark-primary transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-900'>
             <svg className='h-5 w-5' viewBox='0 0 24 24'>
               <path
                 d='M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z'
@@ -63,10 +63,10 @@ export default function LoginPage() {
         </div>
 
         <div className='mt-6 text-center text-xs text-text-light-secondary dark:text-text-dark-secondary'>
-          <p>
+          <p className='font-medium'>
             Restricted to{' '}
-            <span className='font-medium'>@devopsafricalimited.com</span>{' '}
-            accounts only
+            <span className='font-bold'>@devopsafricalimited.com</span> accounts
+            only
           </p>
         </div>
       </div>
