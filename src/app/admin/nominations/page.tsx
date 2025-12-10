@@ -6,6 +6,7 @@ import {
   updateNominationStatus,
   NominationWithDetails,
   getNominationLeaderboard,
+  NominationLeaderboardItem,
 } from '@/supabase/services/nominations';
 import { useToast } from '@/context/ToastContext';
 
@@ -16,9 +17,12 @@ export default function AdminNominationsPage() {
     'all' | 'pending' | 'approved' | 'rejected'
   >('all');
   const { toast } = useToast();
+  const [leaderboard, setLeaderboard] = useState<NominationLeaderboardItem[]>(
+    []
+  );
 
   const [recommendations, setRecommendations] = useState<
-    { categoryTitle: string; items: typeof leaderboard }[]
+    { categoryTitle: string; items: NominationLeaderboardItem[] }[]
   >([]);
 
   const processRecommendations = (
