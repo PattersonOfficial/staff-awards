@@ -87,6 +87,8 @@ export interface Database {
           status: 'draft' | 'published' | 'closed' | string;
           shortlisting_start: string | null;
           shortlisting_end: string | null;
+          winner_id: string | null;
+          winner_published_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -106,6 +108,8 @@ export interface Database {
           status?: 'draft' | 'published' | 'closed' | string;
           shortlisting_start?: string | null;
           shortlisting_end?: string | null;
+          winner_id?: string | null;
+          winner_published_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -125,6 +129,8 @@ export interface Database {
           status?: 'draft' | 'published' | 'closed' | string;
           shortlisting_start?: string | null;
           shortlisting_end?: string | null;
+          winner_id?: string | null;
+          winner_published_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };

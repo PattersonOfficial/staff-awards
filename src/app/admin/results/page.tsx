@@ -2,9 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { getCategories, Category } from '@/supabase/services/categories';
+import {
+  getCategories,
+  Category,
+  publishWinner,
+} from '@/supabase/services/categories';
 import { getStaff, StaffMember } from '@/supabase/services/staff';
 import { getVoteCounts } from '@/supabase/services/votes';
+import { useToast } from '@/context/ToastContext';
+import PublishWinnerModal from '@/components/ui/PublishWinnerModal';
 
 type Result = {
   nomineeId: string;
@@ -46,6 +52,11 @@ export default function AdminResultsPage() {
   const [staffMap, setStaffMap] = useState<Map<string, StaffMember>>(new Map());
   const [loading, setLoading] = useState(true);
   const [loadingResults, setLoadingResults] = useState(false);
+
+  // Publish winner state
+  const [publishModalOpen, setPublishModalOpen] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const { toast } = useToast();
 
   // Initial load - fetch categories and staff
   useEffect(() => {
@@ -167,6 +178,54 @@ export default function AdminResultsPage() {
     ? Math.max(...currentResult.results.map((r) => r.count), 1)
     : 1;
 
+  // Get the leading nominee (potential winner)
+  const leadingNominee = currentResult?.results?.[0];
+  // Check if winner exists (handle both null and undefined)
+  const hasWinner = Boolean(currentResult?.category?.winner_id);
+
+  const handlePublishWinner = async () => {
+    if (!currentResult || !leadingNominee) return;
+
+    try {
+      setPublishing(true);
+      await publishWinner(currentResult.category.id, leadingNominee.nomineeId);
+
+      // Update local state
+      setCategories((prev) =>
+        prev.map((cat) =>
+          cat.id === currentResult.category.id
+            ? { ...cat, winner_id: leadingNominee.nomineeId, status: 'closed' }
+            : cat
+        )
+      );
+
+      // Update category results cache
+      setCategoryResults((prev) => {
+        const updated = new Map(prev);
+        const result = updated.get(currentResult.category.id);
+        if (result) {
+          updated.set(currentResult.category.id, {
+            ...result,
+            category: {
+              ...result.category,
+              winner_id: leadingNominee.nomineeId,
+              status: 'closed',
+            },
+          });
+        }
+        return updated;
+      });
+
+      toast.success(`Winner published: ${leadingNominee.nomineeName}`);
+      setPublishModalOpen(false);
+    } catch (error) {
+      console.error('Error publishing winner:', error);
+      toast.error('Failed to publish winner. Please try again.');
+    } finally {
+      setPublishing(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className='flex flex-1 items-center justify-center'>
@@ -178,12 +237,12 @@ export default function AdminResultsPage() {
   return (
     <div className='flex flex-1 h-full'>
       {/* Left Sidebar - Categories Navigation */}
-      <aside className='w-64 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 hidden md:flex flex-col'>
+      <aside className='w-64 shrink-0 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 hidden md:flex flex-col'>
         <div className='flex flex-col gap-4'>
           <div className='flex gap-3 px-2 py-1 items-center'>
             <div className='flex flex-col'>
               <h1 className='text-gray-900 dark:text-white text-base font-medium leading-normal'>
-                 Statistics
+                Statistics
               </h1>
               <p className='text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal'>
                 Voting Results
@@ -296,12 +355,32 @@ export default function AdminResultsPage() {
                     </span>
                     <span className='truncate'>Export as CSV</span>
                   </button>
-                  <button className='flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal hover:bg-primary/90'>
-                    <span className='material-symbols-outlined mr-2 text-base'>
-                      military_tech
-                    </span>
-                    <span className='truncate'>Publish Winner</span>
-                  </button>
+                  {hasWinner ? (
+                    <div className='flex items-center gap-2 px-4 py-2 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-lg'>
+                      <span className='material-symbols-outlined text-base'>
+                        emoji_events
+                      </span>
+                      <span className='text-sm font-bold'>
+                        Winner Published
+                      </span>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setPublishModalOpen(true)}
+                      disabled={
+                        !leadingNominee ||
+                        currentResult.results.length === 0 ||
+                        publishing
+                      }
+                      className='flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed'>
+                      <span className='material-symbols-outlined mr-2 text-base'>
+                        military_tech
+                      </span>
+                      <span className='truncate'>
+                        {publishing ? 'Publishing...' : 'Publish Winner'}
+                      </span>
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -469,6 +548,13 @@ export default function AdminResultsPage() {
           ))}
         </select>
       </div>
+      {/* Publish Winner Modal */}
+      <PublishWinnerModal
+        isOpen={publishModalOpen}
+        categoryTitle={currentResult?.category?.title || ''}
+        onConfirm={handlePublishWinner}
+        onClose={() => setPublishModalOpen(false)}
+      />
     </div>
   );
 }

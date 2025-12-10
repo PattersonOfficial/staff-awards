@@ -78,3 +78,53 @@ export async function publishCategory(id: string): Promise<Category> {
 export async function closeCategory(id: string): Promise<Category> {
   return updateCategory(id, { status: 'closed' });
 }
+
+// Publish winner for a category
+export async function publishWinner(
+  categoryId: string,
+  winnerId: string
+): Promise<Category> {
+  const { data, error } = await supabase
+    .from('categories')
+    .update({
+      winner_id: winnerId,
+      winner_published_at: new Date().toISOString(),
+      status: 'closed', // Close voting when winner is published
+      updated_at: new Date().toISOString(),
+    } as never)
+    .eq('id', categoryId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as Category;
+}
+
+// Get categories that have winners published
+export async function getCategoriesWithWinners(): Promise<Category[]> {
+  const { data, error } = await supabase
+    .from('categories')
+    .select('*')
+    .not('winner_id', 'is', null)
+    .order('winner_published_at', { ascending: false });
+
+  if (error) throw error;
+  return data as Category[];
+}
+
+// Remove winner from a category (unpublish)
+export async function unpublishWinner(categoryId: string): Promise<Category> {
+  const { data, error } = await supabase
+    .from('categories')
+    .update({
+      winner_id: null,
+      winner_published_at: null,
+      updated_at: new Date().toISOString(),
+    } as never)
+    .eq('id', categoryId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as Category;
+}
