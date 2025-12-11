@@ -201,104 +201,106 @@ export default function AdminNominationsPage() {
               No nominations found.
             </div>
           ) : (
-            <table className='min-w-full divide-y divide-gray-200 dark:divide-gray-700'>
-              <thead className='bg-gray-50 dark:bg-gray-900/50'>
-                <tr>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                    Nominee
-                  </th>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                    Nominator
-                  </th>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                    Category
-                  </th>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                    Reason
-                  </th>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                    Status
-                  </th>
-                  <th className='px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className='bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700'>
-                {filteredNominations.map((nom) => (
-                  <tr key={nom.id}>
-                    <td className='px-6 py-4 whitespace-nowrap'>
-                      <div className='flex items-center'>
-                        <Avatar
-                          src={nom.nominee?.avatar}
-                          name={nom.nominee?.name || 'Unknown'}
-                          className='h-10 w-10'
-                        />
-                        <div className='ml-4'>
-                          <div className='text-sm font-medium text-gray-900 dark:text-white'>
-                            {nom.nominee?.name || 'Unknown'}
-                          </div>
-                          <div className='text-sm text-gray-500'>
-                            {nom.nominee?.department || 'N/A'}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap'>
-                      <div className='text-sm text-gray-700 dark:text-gray-300'>
-                        {nom.nominator_email || 'Anonymous'}
-                      </div>
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap'>
-                      <div className='text-sm text-gray-900 dark:text-white'>
-                        {nom.category?.title || 'Unknown Category'}
-                      </div>
-                    </td>
-                    <td className='px-6 py-4'>
-                      <div
-                        className='text-sm text-gray-500 max-w-xs truncate'
-                        title={nom.reason || ''}>
-                        {nom.reason}
-                      </div>
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap'>
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
-                          nom.status
-                        )}`}>
-                        {nom.status.toUpperCase()}
-                      </span>
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-right text-sm font-medium'>
-                      {nom.status === 'pending' && (
-                        <div className='flex justify-end gap-2'>
-                          <button
-                            onClick={() =>
-                              handleStatusChange(nom.id, 'approved')
-                            }
-                            className='text-green-600 hover:text-green-900 bg-green-50 p-1.5 rounded-md hover:bg-green-100 transition-colors'
-                            title='Approve'>
-                            <span className='material-symbols-outlined text-lg'>
-                              check
-                            </span>
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleStatusChange(nom.id, 'rejected')
-                            }
-                            className='text-red-600 hover:text-red-900 bg-red-50 p-1.5 rounded-md hover:bg-red-100 transition-colors'
-                            title='Reject'>
-                            <span className='material-symbols-outlined text-lg'>
-                              close
-                            </span>
-                          </button>
-                        </div>
-                      )}
-                    </td>
+            <div className='overflow-x-auto'>
+              <table className='min-w-full divide-y divide-gray-200 dark:divide-gray-700'>
+                <thead className='bg-gray-50 dark:bg-gray-900/50'>
+                  <tr>
+                    <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                      Nominee
+                    </th>
+                    <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                      Nominator
+                    </th>
+                    <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                      Category
+                    </th>
+                    <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                      Reason
+                    </th>
+                    <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                      Status
+                    </th>
+                    <th className='px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className='bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700'>
+                  {filteredNominations.map((nom) => (
+                    <tr key={nom.id}>
+                      <td className='px-6 py-4 whitespace-nowrap'>
+                        <div className='flex items-center'>
+                          <Avatar
+                            src={nom.nominee?.avatar}
+                            name={nom.nominee?.name || 'Unknown'}
+                            className='h-10 w-10'
+                          />
+                          <div className='ml-4'>
+                            <div className='text-sm font-medium text-gray-900 dark:text-white'>
+                              {nom.nominee?.name || 'Unknown'}
+                            </div>
+                            <div className='text-sm text-gray-500'>
+                              {nom.nominee?.department || 'N/A'}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap'>
+                        <div className='text-sm text-gray-700 dark:text-gray-300'>
+                          {nom.nominator_email || 'Anonymous'}
+                        </div>
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap'>
+                        <div className='text-sm text-gray-900 dark:text-white'>
+                          {nom.category?.title || 'Unknown Category'}
+                        </div>
+                      </td>
+                      <td className='px-6 py-4'>
+                        <div
+                          className='text-sm text-gray-500 max-w-xs truncate'
+                          title={nom.reason || ''}>
+                          {nom.reason}
+                        </div>
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap'>
+                        <span
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
+                            nom.status
+                          )}`}>
+                          {nom.status.toUpperCase()}
+                        </span>
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-right text-sm font-medium'>
+                        {nom.status === 'pending' && (
+                          <div className='flex justify-end gap-2'>
+                            <button
+                              onClick={() =>
+                                handleStatusChange(nom.id, 'approved')
+                              }
+                              className='text-green-600 cursor-pointer hover:text-green-900 bg-green-50 p-1 pb-0! rounded-md hover:bg-green-100 transition-colors'
+                              title='Approve'>
+                              <span className='material-symbols-outlined text-xs'>
+                                check
+                              </span>
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleStatusChange(nom.id, 'rejected')
+                              }
+                              className='text-red-600 cursor-pointer hover:text-red-900 bg-red-50 p-1 pb-0! rounded-md hover:bg-red-100 transition-colors'
+                              title='Reject'>
+                              <span className='material-symbols-outlined text-xs'>
+                                close
+                              </span>
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>
