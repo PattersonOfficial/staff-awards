@@ -26,8 +26,9 @@ export interface Nomination {
   id: string;
   nomineeId: string;
   nominee: Staff;
-  nominatorId: string;
-  nominator: Staff;
+  nominatorId?: string; // Legacy - may not exist
+  nominator?: Staff; // Optional - may not have staff record
+  nominatorEmail?: string; // Display email from Auth user
   categoryId: string;
   category: AwardCategory;
   reason: string;

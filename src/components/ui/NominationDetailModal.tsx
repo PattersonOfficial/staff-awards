@@ -1,4 +1,5 @@
 import { Nomination } from '@/types';
+import Avatar from './Avatar';
 
 interface NominationDetailModalProps {
   nomination: Nomination | null;
@@ -31,9 +32,11 @@ export default function NominationDetailModal({
 
         <div className='p-6 space-y-6'>
           <div className='flex items-start gap-4 pb-6 border-b border-gray-200 dark:border-gray-700'>
-            <div
-              className='w-20 h-20 rounded-full bg-cover bg-center shrink-0'
-              style={{ backgroundImage: `url(${nomination.nominee.avatar})` }}
+            <Avatar
+              src={nomination.nominee.avatar}
+              name={nomination.nominee.name}
+              className='w-20 h-20'
+              textClassName='text-2xl'
             />
             <div className='flex-1'>
               <h3 className='text-xl font-bold text-[#212529] dark:text-white mb-1'>
@@ -86,52 +89,28 @@ export default function NominationDetailModal({
             </div>
           </div>
 
-          <div className='grid grid-cols-2 gap-4'>
-            <div>
-              <h4 className='text-sm font-semibold text-[#212529] dark:text-white mb-2 flex items-center gap-2'>
-                <span className='material-symbols-outlined text-[#0A4D68]'>
-                  person
-                </span>
-                Nominated By
-              </h4>
-              <div className='bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4'>
-                <p className='font-medium text-[#212529] dark:text-white'>
-                  {nomination.nominator.name}
-                </p>
-                <p className='text-sm text-[#6c757d] dark:text-gray-400'>
-                  {nomination.nominator.position}
-                </p>
-              </div>
-            </div>
-
-            <div>
-              <h4 className='text-sm font-semibold text-[#212529] dark:text-white mb-2 flex items-center gap-2'>
-                <span className='material-symbols-outlined text-[#0A4D68]'>
-                  schedule
-                </span>
-                Submission Date
-              </h4>
-              <div className='bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4'>
-                <p className='font-medium text-[#212529] dark:text-white'>
-                  {new Date(nomination.submittedAt).toLocaleDateString(
-                    'en-US',
-                    {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    }
-                  )}
-                </p>
-                <p className='text-sm text-[#6c757d] dark:text-gray-400'>
-                  {new Date(nomination.submittedAt).toLocaleTimeString(
-                    'en-US',
-                    {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    }
-                  )}
-                </p>
-              </div>
+          {/* Submission Date - simple display since user is the nominator */}
+          <div>
+            <h4 className='text-sm font-semibold text-[#212529] dark:text-white mb-2 flex items-center gap-2'>
+              <span className='material-symbols-outlined text-primary'>
+                schedule
+              </span>
+              Submission Date
+            </h4>
+            <div className='bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4'>
+              <p className='font-medium text-[#212529] dark:text-white'>
+                {new Date(nomination.submittedAt).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </p>
+              <p className='text-sm text-[#6c757d] dark:text-gray-400'>
+                {new Date(nomination.submittedAt).toLocaleTimeString('en-US', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </p>
             </div>
           </div>
 
