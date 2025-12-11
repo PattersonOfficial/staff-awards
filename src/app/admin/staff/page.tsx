@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import ConfirmationModal from '@/components/ui/ConfirmationModal';
+import Avatar from '@/components/ui/Avatar';
 import { getStaff, deleteStaff, StaffMember } from '@/supabase/services/staff';
 
 export default function AdminStaffPage() {
@@ -141,21 +142,11 @@ export default function AdminStaffPage() {
                         <tr key={staff.id}>
                           <td className='whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6'>
                             <div className='flex items-center'>
-                              <div className='h-10 w-10 flex-shrink-0'>
-                                {staff.avatar ? (
-                                  <img
-                                    className='h-10 w-10 rounded-full object-cover'
-                                    src={staff.avatar}
-                                    alt=''
-                                  />
-                                ) : (
-                                  <div className='flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500'>
-                                    <span className='material-symbols-outlined text-lg'>
-                                      person
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
+                              <Avatar
+                                src={staff.avatar}
+                                name={staff.name}
+                                className='h-10 w-10'
+                              />
                               <div className='ml-4'>
                                 <div className='font-medium text-gray-900 dark:text-white'>
                                   {staff.name}

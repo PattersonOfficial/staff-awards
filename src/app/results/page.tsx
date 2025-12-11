@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Header from '@/components/layout/Header';
+import Avatar from '@/components/ui/Avatar';
 import { VotingResult } from '@/types';
 import { getCategories, Category } from '@/supabase/services/categories';
 import { getStaff } from '@/supabase/services/staff';
@@ -338,15 +339,14 @@ export default function ResultsPage() {
                               : 'pb-3 border-b border-gray-200 dark:border-gray-700 last:border-0 last:pb-0'
                           }`}>
                           <div className='relative shrink-0'>
-                            <div
+                            <Avatar
+                              src={nominee.nominee.avatar}
+                              name={nominee.nominee.name}
                               className={`${
                                 nomineeIndex === 0
                                   ? 'w-12 h-12 ring-2 ring-yellow-400 dark:ring-yellow-600'
                                   : 'w-10 h-10'
-                              } rounded-full bg-cover bg-center`}
-                              style={{
-                                backgroundImage: `url(${nominee.nominee.avatar})`,
-                              }}
+                              }`}
                             />
                             <div
                               className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-800 ${
@@ -433,15 +433,17 @@ export default function ResultsPage() {
                           <div className='flex flex-col md:flex-row md:items-center gap-4'>
                             <div className='flex items-center gap-4 flex-1'>
                               <div className='relative'>
-                                <div
+                                <Avatar
+                                  src={nominee.nominee.avatar}
+                                  name={nominee.nominee.name}
                                   className={`${
                                     nomineeIndex === 0
                                       ? 'w-20 h-20 lg:w-24 lg:h-24 ring-4 ring-yellow-400 dark:ring-yellow-600'
                                       : 'w-16 h-16 lg:w-20 lg:h-20'
-                                  } rounded-full bg-cover bg-center shrink-0`}
-                                  style={{
-                                    backgroundImage: `url(${nominee.nominee.avatar})`,
-                                  }}
+                                  }`}
+                                  textClassName={
+                                    nomineeIndex === 0 ? 'text-3xl' : 'text-2xl'
+                                  }
                                 />
                                 {nomineeIndex > 0 && (
                                   <div className='absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center border-2 border-white dark:border-gray-800 shadow-lg'>

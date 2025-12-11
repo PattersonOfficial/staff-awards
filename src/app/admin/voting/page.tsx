@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import PublishWinnerModal from '@/components/ui/PublishWinnerModal';
+import Avatar from '@/components/ui/Avatar';
 import { getCategories, Category } from '@/supabase/services/categories';
 import { getVoteCounts, VoteCount } from '@/supabase/services/votes';
 import { getStaff, StaffMember } from '@/supabase/services/staff';
@@ -323,15 +324,10 @@ export default function VotingResultsPage() {
                         className='hover:bg-gray-50 dark:hover:bg-gray-800/30'>
                         <td className='whitespace-nowrap px-6 py-4 font-medium text-text-light-primary dark:text-text-dark-primary'>
                           <div className='flex items-center gap-4'>
-                            <img
-                              className='h-10 w-10 rounded-full object-cover'
-                              src={
-                                item.staff.avatar ||
-                                `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                                  item.staff.name
-                                )}&background=random`
-                              }
-                              alt={item.staff.name}
+                            <Avatar
+                              src={item.staff.avatar}
+                              name={item.staff.name}
+                              className='h-10 w-10'
                             />
                             <div>
                               <div className='font-semibold'>

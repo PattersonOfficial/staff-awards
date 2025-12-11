@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
+import Avatar from '@/components/ui/Avatar';
 import {
   getCategories,
   Category,
@@ -481,22 +481,11 @@ export default function AdminResultsPage() {
                               }`}>
                               <td className='px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap'>
                                 <div className='flex items-center gap-4'>
-                                  {result.nomineeAvatar ? (
-                                    <Image
-                                      className='w-10 h-10 rounded-full object-cover'
-                                      src={result.nomineeAvatar}
-                                      alt={result.nomineeName}
-                                      width={40}
-                                      height={40}
-                                      unoptimized
-                                    />
-                                  ) : (
-                                    <div className='w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center'>
-                                      <span className='material-symbols-outlined text-gray-500'>
-                                        person
-                                      </span>
-                                    </div>
-                                  )}
+                                  <Avatar
+                                    src={result.nomineeAvatar}
+                                    name={result.nomineeName}
+                                    className='w-10 h-10'
+                                  />
                                   <div>
                                     <div className='font-semibold flex items-center gap-2'>
                                       {result.nomineeName}

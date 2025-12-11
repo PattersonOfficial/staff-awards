@@ -9,6 +9,7 @@ import {
   NominationLeaderboardItem,
 } from '@/supabase/services/nominations';
 import { useToast } from '@/context/ToastContext';
+import Avatar from '@/components/ui/Avatar';
 
 export default function AdminNominationsPage() {
   const [nominations, setNominations] = useState<NominationWithDetails[]>([]);
@@ -167,19 +168,12 @@ export default function AdminNominationsPage() {
                             }`}>
                             {index + 1}
                           </div>
-                          {item.nominee.avatar ? (
-                            <img
-                              src={item.nominee.avatar}
-                              className='w-8 h-8 rounded-full object-cover'
-                              alt=''
-                            />
-                          ) : (
-                            <div className='w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center'>
-                              <span className='material-symbols-outlined text-[16px] text-gray-400'>
-                                person
-                              </span>
-                            </div>
-                          )}
+                          <Avatar
+                            src={item.nominee.avatar}
+                            name={item.nominee.name}
+                            className='w-8 h-8'
+                            textClassName='text-sm'
+                          />
                           <span className='text-sm font-medium text-gray-900 dark:text-white'>
                             {item.nominee.name}
                           </span>
@@ -235,21 +229,11 @@ export default function AdminNominationsPage() {
                   <tr key={nom.id}>
                     <td className='px-6 py-4 whitespace-nowrap'>
                       <div className='flex items-center'>
-                        <div className='flex-shrink-0 h-10 w-10'>
-                          {nom.nominee?.avatar ? (
-                            <img
-                              className='h-10 w-10 rounded-full object-cover'
-                              src={nom.nominee.avatar}
-                              alt=''
-                            />
-                          ) : (
-                            <div className='h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center'>
-                              <span className='material-symbols-outlined text-gray-400'>
-                                person
-                              </span>
-                            </div>
-                          )}
-                        </div>
+                        <Avatar
+                          src={nom.nominee?.avatar}
+                          name={nom.nominee?.name || 'Unknown'}
+                          className='h-10 w-10'
+                        />
                         <div className='ml-4'>
                           <div className='text-sm font-medium text-gray-900 dark:text-white'>
                             {nom.nominee?.name || 'Unknown'}
