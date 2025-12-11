@@ -373,7 +373,7 @@ export default function MyNominationsPage() {
                   <div className='flex items-center gap-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-3'>
                     <button
                       onClick={() => handleViewNomination(nomination)}
-                      className='flex flex-1 items-center justify-center gap-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 py-2 text-sm font-medium text-text-light-primary dark:text-text-dark-primary hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors'>
+                      className='flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 py-2 text-sm font-medium text-text-light-primary dark:text-text-dark-primary hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors'>
                       <span className='material-symbols-outlined text-lg'>
                         visibility
                       </span>
@@ -387,7 +387,7 @@ export default function MyNominationsPage() {
                             nomination.nominee.name
                           )
                         }
-                        className='flex items-center justify-center rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-2 text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors'
+                        className='flex items-center cursor-pointer justify-center rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-2 text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors'
                         title='Cancel'>
                         <span className='material-symbols-outlined text-lg'>
                           close
