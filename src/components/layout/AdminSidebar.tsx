@@ -105,7 +105,7 @@ export default function AdminSidebar() {
       <div className='mt-auto'>
         <button
           onClick={handleLogoutClick}
-          className='flex w-full items-center gap-3 rounded-lg px-3 py-2 text-text-light-secondary dark:text-text-dark-secondary hover:bg-accent-light dark:hover:bg-accent-dark hover:text-text-light-primary dark:hover:text-text-dark-primary transition-colors'>
+          className='flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-text-light-secondary dark:text-text-dark-secondary hover:bg-accent-light dark:hover:bg-accent-dark hover:text-text-light-primary dark:hover:text-text-dark-primary transition-colors'>
           <span className='material-symbols-outlined text-xl'>logout</span>
           <span className='text-sm font-medium'>Logout</span>
         </button>

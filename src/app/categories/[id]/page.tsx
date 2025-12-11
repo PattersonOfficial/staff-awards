@@ -259,8 +259,8 @@ export default function CategoryPage() {
       await createNomination({
         category_id: category.id,
         nominee_id: selectedStaffId,
-        nominator_id: user.id, // Use authenticated User ID directly
-        nominator_email: user.email, // Capture email
+        nominator_user_id: user.id, // Supabase Auth UUID
+        nominator_email: user.email, // For display purposes
         reason: reason,
         status: 'pending',
       });

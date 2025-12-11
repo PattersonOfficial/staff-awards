@@ -5,7 +5,7 @@ import {
   getNominations,
   getNominationById,
   getNominationsByCategory,
-  getNominationsByNominator,
+  getNominationsByUserUid,
   getPendingNominations,
   getShortlistedNominations,
   createNomination,
@@ -111,20 +111,20 @@ export function useNominationsByCategory(categoryId: string | undefined) {
   return { nominations, loading, error, refetch: fetchNominations };
 }
 
-export function useMyNominations(nominatorId: string | undefined) {
+export function useMyNominations(userUid: string | undefined) {
   const [nominations, setNominations] = useState<NominationWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchNominations = useCallback(async () => {
-    if (!nominatorId) {
+    if (!userUid) {
       setLoading(false);
       return;
     }
 
     try {
       setLoading(true);
-      const data = await getNominationsByNominator(nominatorId);
+      const data = await getNominationsByUserUid(userUid);
       setNominations(data);
       setError(null);
     } catch (err) {
@@ -134,7 +134,7 @@ export function useMyNominations(nominatorId: string | undefined) {
     } finally {
       setLoading(false);
     }
-  }, [nominatorId]);
+  }, [userUid]);
 
   useEffect(() => {
     fetchNominations();

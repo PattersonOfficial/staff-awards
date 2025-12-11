@@ -8,12 +8,9 @@ import NominationDetailModal from '@/components/ui/NominationDetailModal';
 import CancelNominationModal from '@/components/ui/CancelNominationModal';
 import Toast from '@/components/ui/Toast';
 import {
-  getNominationsByNominatorId,
+  getNominationsByUserUid,
   deleteNomination,
-  NominationWithDetails,
 } from '@/supabase/services/nominations';
-import { getStaffByEmail } from '@/supabase/services/staff';
-import { Nomination as SupabaseNomination } from '@/supabase/services/nominations';
 
 // Map Supabase NominationWithDetails to strict UI Nomination type if needed, but let's try to align types.
 // The UI components expect a specific shape. Let's look at `src/types/index.ts` or similar if it exists.
@@ -60,25 +57,18 @@ export default function MyNominationsPage() {
 
   useEffect(() => {
     async function fetchUserNominations() {
-      if (!user?.email) return;
+      if (!user?.id) return;
 
       try {
         setLoadingData(true);
-        // 1. Get Staff ID from Email
-        const staff = await getStaffByEmail(user.email);
-        if (!staff) {
-          console.warn('No staff profile found for email:', user.email);
-          setLoadingData(false);
-          return;
-        }
 
-        // 2. Get Nominations
-        const data = await getNominationsByNominatorId(staff.id);
+        // Get nominations by Auth User UUID (primary and only method now)
+        const data = await getNominationsByUserUid(user.id);
 
-        // 3. Map to UI
+        // Map to UI
         const mapped: UINomination[] = data.map((n) => ({
           id: n.id,
-          status: n.status as any,
+          status: n.status as UINomination['status'],
           submittedAt: n.created_at,
           nominee: {
             name: n.nominee.name,
@@ -95,7 +85,14 @@ export default function MyNominationsPage() {
           reason: n.reason || '',
         }));
 
-        setNominations(mapped);
+        // Sort by most recent first
+        const sorted = mapped.sort(
+          (a, b) =>
+            new Date(b.submittedAt).getTime() -
+            new Date(a.submittedAt).getTime()
+        );
+
+        setNominations(sorted);
       } catch (err) {
         console.error('Error fetching nominations:', err);
       } finally {

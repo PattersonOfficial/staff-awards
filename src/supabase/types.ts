@@ -139,8 +139,8 @@ export interface Database {
         Row: {
           id: string;
           category_id: string;
-          nominator_id: string | null;
-          nominator_email?: string | null; // Added manually
+          nominator_email?: string | null; // For display purposes
+          nominator_user_id?: string | null; // Supabase Auth UUID (primary identifier)
           nominee_id: string;
           reason: string | null;
           status: 'pending' | 'approved' | 'rejected' | 'shortlisted' | string;
@@ -151,8 +151,8 @@ export interface Database {
         Insert: {
           id?: string;
           category_id: string;
-          nominator_id?: string | null;
-          nominator_email?: string | null; // Added manually
+          nominator_email?: string | null; // For display purposes
+          nominator_user_id?: string | null; // Supabase Auth UUID (primary identifier)
           nominee_id: string;
           reason?: string | null;
           status?: 'pending' | 'approved' | 'rejected' | 'shortlisted' | string;
@@ -163,7 +163,7 @@ export interface Database {
         Update: {
           id?: string;
           category_id?: string;
-          nominator_id?: string | null;
+          nominator_user_id?: string | null; // Supabase Auth UUID
           nominee_id?: string;
           reason?: string | null;
           status?: 'pending' | 'approved' | 'rejected' | 'shortlisted' | string;

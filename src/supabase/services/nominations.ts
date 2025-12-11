@@ -14,13 +14,14 @@ export type NominationWithDetails = Nomination & {
 export async function createNomination(
   nomination: NominationInsert
 ): Promise<Nomination> {
-  if (nomination.nominator_id) {
+  // Check for duplicate using nominator_user_id (Auth UUID)
+  if (nomination.nominator_user_id) {
     const { data: existing } = await supabase
       .from('nominations')
       .select('id')
-      .eq('nominator_id', nomination.nominator_id)
       .eq('category_id', nomination.category_id)
       .eq('nominee_id', nomination.nominee_id)
+      .eq('nominator_user_id', nomination.nominator_user_id)
       .maybeSingle();
 
     if (existing) {
@@ -37,7 +38,7 @@ export async function createNomination(
     .single();
 
   if (error) {
-    // Fallback for race conditions
+    // Fallback for race conditions (unique constraint violation)
     if (error.code === '23505') {
       throw new Error(
         'You have already nominated this person for this category.'
@@ -102,8 +103,9 @@ export async function getNominationsByCategory(
   return data as unknown as NominationWithDetails[];
 }
 
-export async function getNominationsByNominator(
-  nominatorId: string
+// Get nominations by Auth User UUID (primary method)
+export async function getNominationsByUserUid(
+  userUid: string
 ): Promise<NominationWithDetails[]> {
   const { data, error } = await supabase
     .from('nominations')
@@ -114,15 +116,12 @@ export async function getNominationsByNominator(
       category:categories!nominations_category_id_fkey(*)
     `
     )
-    .eq('nominator_id', nominatorId)
+    .eq('nominator_user_id', userUid)
     .order('created_at', { ascending: false });
 
   if (error) throw error;
   return data as unknown as NominationWithDetails[];
 }
-
-// Alias for backward compatibility if needed, though useNominations uses the above
-export const getNominationsByNominatorId = getNominationsByNominator;
 
 export async function getPendingNominations(): Promise<
   NominationWithDetails[]

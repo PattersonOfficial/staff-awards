@@ -60,12 +60,12 @@ export default function LogoutConfirmationModal({
         <div className='grid grid-cols-2 gap-px bg-gray-100 dark:bg-gray-700'>
           <button
             onClick={onClose}
-            className='block w-full bg-white dark:bg-card-dark p-4 text-sm font-medium text-text-light-secondary dark:text-text-dark-secondary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors'>
+            className='block w-full cursor-pointer bg-white dark:bg-card-dark p-4 text-sm font-medium text-text-light-secondary dark:text-text-dark-secondary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors'>
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className='block w-full bg-white dark:bg-card-dark p-4 text-sm font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors'>
+            className='block w-full cursor-pointer bg-white dark:bg-card-dark p-4 text-sm font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors'>
             Logout
           </button>
         </div>
