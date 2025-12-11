@@ -6,6 +6,7 @@ import { useAuth } from '@/supabase/hooks/useAuth';
 import Header from '@/components/layout/Header';
 import NominationDetailModal from '@/components/ui/NominationDetailModal';
 import CancelNominationModal from '@/components/ui/CancelNominationModal';
+import Avatar from '@/components/ui/Avatar';
 import Toast from '@/components/ui/Toast';
 import {
   getNominationsByUserUid,
@@ -269,13 +270,11 @@ export default function MyNominationsPage() {
                   key={nomination.id}
                   className='group flex flex-col md:flex-row items-start md:items-center justify-between gap-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-card-dark p-4 shadow-sm transition-all hover:shadow-md'>
                   <div className='flex items-center gap-4'>
-                    <div className='relative h-12 w-12 shrink-0 overflow-hidden rounded-full'>
-                      <img
-                        src={nomination.nominee.avatar}
-                        alt={nomination.nominee.name}
-                        className='h-full w-full object-cover'
-                      />
-                    </div>
+                    <Avatar
+                      src={nomination.nominee.avatar}
+                      name={nomination.nominee.name}
+                      className='h-12 w-12'
+                    />
                     <div>
                       <h3 className='font-bold text-text-light-primary dark:text-text-dark-primary'>
                         {nomination.nominee.name}
@@ -335,13 +334,11 @@ export default function MyNominationsPage() {
                   key={nomination.id}
                   className='group flex flex-col overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-card-dark shadow-sm transition-all hover:shadow-md'>
                   <div className='flex items-center gap-4 border-b border-gray-200 dark:border-gray-700 p-4'>
-                    <div className='relative h-10 w-10 shrink-0 overflow-hidden rounded-full'>
-                      <img
-                        src={nomination.nominee.avatar}
-                        alt={nomination.nominee.name}
-                        className='h-full w-full object-cover'
-                      />
-                    </div>
+                    <Avatar
+                      src={nomination.nominee.avatar}
+                      name={nomination.nominee.name}
+                      className='h-10 w-10'
+                    />
                     <div className='overflow-hidden'>
                       <h3 className='truncate font-bold text-text-light-primary dark:text-text-dark-primary'>
                         {nomination.nominee.name}
