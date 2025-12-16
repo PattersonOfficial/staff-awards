@@ -11,6 +11,7 @@ import {
 import { getDepartments, Department } from '@/supabase/services/departments';
 import { useToast } from '@/context/ToastContext';
 import { notFound, useRouter } from 'next/navigation';
+import { supabase } from '@/supabase/client';
 
 export default function EditStaffPage({
   params,
@@ -23,6 +24,8 @@ export default function EditStaffPage({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [departments, setDepartments] = useState<Department[]>([]);
+  const [file, setFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const { toast } = useToast();
 
@@ -63,17 +66,51 @@ export default function EditStaffPage({
     notFound();
   }
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      // Create preview URL
+      const objectUrl = URL.createObjectURL(selectedFile);
+      setPreviewUrl(objectUrl);
+    }
+  };
+
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSaving(true);
     const formData = new FormData(e.currentTarget);
 
     try {
+      let avatarUrl = staff?.avatar || null;
+
+      // Upload new avatar if file selected
+      if (file) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${id}-${Date.now()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('staff-avatars')
+          .upload(filePath, file);
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        const { data } = supabase.storage
+          .from('staff-avatars')
+          .getPublicUrl(filePath);
+
+        avatarUrl = data.publicUrl;
+      }
+
       await updateStaff(id, {
         name: formData.get('name') as string,
         email: formData.get('email') as string,
         position: formData.get('position') as string,
         department: formData.get('department') as string,
+        avatar: avatarUrl,
       });
       toast.success('Staff updated successfully');
       router.push('/admin/staff');
@@ -167,6 +204,7 @@ export default function EditStaffPage({
                   <div className='mt-2 flex items-center gap-6'>
                     <Image
                       src={
+                        previewUrl ||
                         staff.avatar ||
                         `https://ui-avatars.com/api/?name=${encodeURIComponent(
                           staff.name
@@ -185,11 +223,15 @@ export default function EditStaffPage({
                         </span>
                         <div className='mt-2 flex text-sm leading-6 text-gray-600 dark:text-gray-300 justify-center'>
                           <label className='relative cursor-pointer rounded-md font-semibold text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 dark:focus-within:ring-offset-background-dark hover:text-primary/80'>
-                            <span>Change photo</span>
+                            <span>
+                              {file ? 'Change selected photo' : 'Change photo'}
+                            </span>
                             <input
                               className='sr-only'
                               name='file-upload'
                               type='file'
+                              accept='image/*'
+                              onChange={handleFileChange}
                             />
                           </label>
                         </div>
