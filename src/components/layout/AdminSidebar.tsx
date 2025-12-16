@@ -48,7 +48,7 @@ export default function AdminSidebar() {
   };
 
   return (
-    <aside className='flex w-64 flex-col border-r border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-4'>
+    <aside className='flex h-full w-64 flex-col border-r border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark p-4 shrink-0'>
       <div className='flex items-center gap-3 px-2 py-4'>
         <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white'>
           <span className='material-symbols-outlined text-lg'>

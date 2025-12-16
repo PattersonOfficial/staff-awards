@@ -53,9 +53,9 @@ export default function AdminLayout({
   }
 
   return (
-    <div className='flex h-screen w-full bg-background dark:bg-background-dark admin-theme'>
+    <div className='flex h-screen w-full overflow-hidden bg-background dark:bg-background-dark admin-theme'>
       <AdminSidebar />
-      {children}
+      <div className='flex-1 overflow-y-auto'>{children}</div>
     </div>
   );
 }
