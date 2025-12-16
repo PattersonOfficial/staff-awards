@@ -4,12 +4,16 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import ConfirmationModal from '@/components/ui/ConfirmationModal';
 import Avatar from '@/components/ui/Avatar';
+import Pagination from '@/components/ui/Pagination';
 import { getStaff, deleteStaff, StaffMember } from '@/supabase/services/staff';
+
+const ITEMS_PER_PAGE = 10;
 
 export default function AdminStaffPage() {
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Delete Modal
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -59,6 +63,18 @@ export default function AdminStaffPage() {
         staff.department.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesSearch;
   });
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredStaff.length / ITEMS_PER_PAGE);
+  const paginatedStaff = filteredStaff.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // Reset to page 1 when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   return (
     <main className='flex-1 p-6 lg:p-10'>
@@ -138,7 +154,7 @@ export default function AdminStaffPage() {
                       </tr>
                     </thead>
                     <tbody className='divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800'>
-                      {filteredStaff.map((staff) => (
+                      {paginatedStaff.map((staff) => (
                         <tr key={staff.id}>
                           <td className='whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6'>
                             <div className='flex items-center'>
@@ -198,6 +214,13 @@ export default function AdminStaffPage() {
                     </tbody>
                   </table>
                 )}
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                  itemsPerPage={ITEMS_PER_PAGE}
+                  totalItems={filteredStaff.length}
+                />
               </div>
             </div>
           </div>

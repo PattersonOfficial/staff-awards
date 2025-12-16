@@ -10,6 +10,9 @@ import {
 } from '@/supabase/services/nominations';
 import { useToast } from '@/context/ToastContext';
 import Avatar from '@/components/ui/Avatar';
+import Pagination from '@/components/ui/Pagination';
+
+const ITEMS_PER_PAGE = 10;
 
 export default function AdminNominationsPage() {
   const [nominations, setNominations] = useState<NominationWithDetails[]>([]);
@@ -17,6 +20,7 @@ export default function AdminNominationsPage() {
   const [filter, setFilter] = useState<
     'all' | 'pending' | 'approved' | 'rejected'
   >('all');
+  const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
   const [leaderboard, setLeaderboard] = useState<NominationLeaderboardItem[]>(
     []
@@ -94,6 +98,18 @@ export default function AdminNominationsPage() {
     if (filter === 'all') return true;
     return nom.status === filter;
   });
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredNominations.length / ITEMS_PER_PAGE);
+  const paginatedNominations = filteredNominations.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // Reset to page 1 when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filter]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -226,7 +242,7 @@ export default function AdminNominationsPage() {
                   </tr>
                 </thead>
                 <tbody className='bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700'>
-                  {filteredNominations.map((nom) => (
+                  {paginatedNominations.map((nom) => (
                     <tr key={nom.id}>
                       <td className='px-6 py-4 whitespace-nowrap'>
                         <div className='flex items-center'>
@@ -302,6 +318,13 @@ export default function AdminNominationsPage() {
               </table>
             </div>
           )}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            itemsPerPage={ITEMS_PER_PAGE}
+            totalItems={filteredNominations.length}
+          />
         </div>
       </div>
     </main>
