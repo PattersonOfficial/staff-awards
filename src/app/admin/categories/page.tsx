@@ -141,8 +141,8 @@ export default function AdminCategoriesPage() {
             <div className='inline-block min-w-full align-middle'>
               <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'>
                 {loading ? (
-                  <div className='flex p-8 justify-center'>
-                    <div className='h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent'></div>
+                  <div className='flex p-12 items-center justify-center min-h-[300px]'>
+                    <div className='h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent'></div>
                   </div>
                 ) : filteredCategories.length === 0 ? (
                   <div className='p-8 text-center text-gray-500 dark:text-gray-400'>

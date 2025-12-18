@@ -229,8 +229,8 @@ export default function AdminNominationsPage() {
           </div>
 
           {loading ? (
-            <div className='flex p-12 justify-center'>
-              <div className='h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent'></div>
+            <div className='flex p-12 items-center justify-center min-h-[300px]'>
+              <div className='h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent'></div>
             </div>
           ) : filteredNominations.length === 0 ? (
             <div className='p-12 text-center text-gray-500'>

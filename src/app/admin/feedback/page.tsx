@@ -219,8 +219,8 @@ export default function AdminFeedbackPage() {
           {/* Feedback List */}
           <div className='lg:col-span-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden'>
             {loading ? (
-              <div className='flex p-12 justify-center'>
-                <div className='h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent' />
+              <div className='flex p-12 items-center justify-center min-h-[300px]'>
+                <div className='h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent' />
               </div>
             ) : filteredFeedback.length === 0 ? (
               <div className='p-12 text-center text-gray-500'>

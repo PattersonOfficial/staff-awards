@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Avatar from '@/components/ui/Avatar';
 import {
   getCategories,
@@ -414,15 +414,11 @@ export default function AdminResultsPage() {
                           ? Math.max((result.count / maxVotes) * 100, 5)
                           : 5;
                       return (
-                        <>
-                          <p
-                            key={`name-${result.nomineeId}`}
-                            className='text-gray-500 dark:text-gray-400 text-[13px] font-medium leading-normal truncate max-w-[120px]'>
+                        <React.Fragment key={result.nomineeId}>
+                          <p className='text-gray-500 dark:text-gray-400 text-[13px] font-medium leading-normal truncate max-w-[120px]'>
                             {result.nomineeName}
                           </p>
-                          <div
-                            key={`bar-${result.nomineeId}`}
-                            className='h-8 flex items-center rounded-lg bg-gray-100 dark:bg-gray-700'>
+                          <div className='h-8 flex items-center rounded-lg bg-gray-100 dark:bg-gray-700'>
                             <div
                               className='bg-primary h-full rounded-lg flex items-center justify-end px-2 transition-all duration-500'
                               style={{ width: `${barWidth}%` }}>
@@ -431,7 +427,7 @@ export default function AdminResultsPage() {
                               </span>
                             </div>
                           </div>
-                        </>
+                        </React.Fragment>
                       );
                     })}
                   </div>
