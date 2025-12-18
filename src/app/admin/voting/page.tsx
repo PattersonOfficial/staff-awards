@@ -28,6 +28,58 @@ export default function VotingResultsPage() {
   const [isPublished, setIsPublished] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Helper to get voting status based on dates
+  const getVotingStatus = (category: Category | undefined) => {
+    if (!category)
+      return { status: 'unknown', label: 'Unknown', color: 'gray' };
+
+    const now = new Date();
+    const votingStart = category.voting_start
+      ? new Date(category.voting_start)
+      : null;
+    const votingEnd = category.voting_end
+      ? new Date(category.voting_end)
+      : null;
+    const nominationDeadline = category.nomination_deadline
+      ? new Date(category.nomination_deadline)
+      : null;
+
+    // If winner is published, show that status
+    if (isPublished) {
+      return { status: 'published', label: 'Winner Published', color: 'green' };
+    }
+
+    // Check if nominations are still open (inclusive of deadline datetime)
+    if (nominationDeadline && now <= nominationDeadline) {
+      return {
+        status: 'nominations',
+        label: 'Nominations Open',
+        color: 'blue',
+      };
+    }
+
+    // Check if voting is open (inclusive of voting end datetime)
+    if (votingStart && votingEnd && now >= votingStart && now <= votingEnd) {
+      return { status: 'voting', label: 'Voting Open', color: 'green' };
+    }
+
+    // Voting hasn't started yet
+    if (votingStart && now < votingStart) {
+      return {
+        status: 'upcoming',
+        label: 'Voting Opens Soon',
+        color: 'yellow',
+      };
+    }
+
+    // Voting has ended
+    if (votingEnd && now >= votingEnd) {
+      return { status: 'closed', label: 'Voting Closed', color: 'red' };
+    }
+
+    return { status: 'unknown', label: 'Status Unknown', color: 'gray' };
+  };
+
   useEffect(() => {
     async function fetchInitialData() {
       try {
@@ -228,13 +280,29 @@ export default function VotingResultsPage() {
                 <div className='flex items-center gap-2'>
                   <span
                     className={`h-2 w-2 rounded-full ${
-                      isPublished ? 'bg-green-600' : 'bg-red-600'
+                      getVotingStatus(selectedCategory).color === 'green'
+                        ? 'bg-green-600'
+                        : getVotingStatus(selectedCategory).color === 'blue'
+                        ? 'bg-blue-600'
+                        : getVotingStatus(selectedCategory).color === 'yellow'
+                        ? 'bg-yellow-600'
+                        : getVotingStatus(selectedCategory).color === 'red'
+                        ? 'bg-red-600'
+                        : 'bg-gray-600'
                     }`}></span>
                   <span
                     className={`text-sm font-medium ${
-                      isPublished ? 'text-green-600' : 'text-red-600'
+                      getVotingStatus(selectedCategory).color === 'green'
+                        ? 'text-green-600'
+                        : getVotingStatus(selectedCategory).color === 'blue'
+                        ? 'text-blue-600'
+                        : getVotingStatus(selectedCategory).color === 'yellow'
+                        ? 'text-yellow-600'
+                        : getVotingStatus(selectedCategory).color === 'red'
+                        ? 'text-red-600'
+                        : 'text-gray-600'
                     }`}>
-                    {isPublished ? 'Winner Published' : 'Voting Closed'}
+                    {getVotingStatus(selectedCategory).label}
                   </span>
                 </div>
               </div>

@@ -3,13 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useAuth } from '@/supabase/hooks/useAuth';
+import { signOutAdmin } from '@/supabase/services/adminAuth';
 import LogoutConfirmationModal from '@/components/ui/LogoutConfirmationModal';
 
 export default function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { signOut } = useAuth();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const isActive = (path: string) => {
@@ -24,9 +23,9 @@ export default function AdminSidebar() {
     setIsLogoutModalOpen(true);
   };
 
-  const handleConfirmLogout = async () => {
+  const handleConfirmLogout = () => {
     try {
-      await signOut();
+      signOutAdmin();
       router.push('/');
     } catch (error) {
       console.error('Error signing out:', error);
