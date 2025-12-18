@@ -235,7 +235,7 @@ export default function AdminFeedbackPage() {
                   <button
                     key={item.id}
                     onClick={() => setSelectedFeedback(item)}
-                    className={`w-full p-4 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50 ${
+                    className={`w-full p-4 text-left transition-colors cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 ${
                       selectedFeedback?.id === item.id
                         ? 'bg-primary/5 border-l-4 border-l-primary'
                         : ''
@@ -300,7 +300,7 @@ export default function AdminFeedbackPage() {
                         setFeedbackToDelete(selectedFeedback.id);
                         setIsDeleteModalOpen(true);
                       }}
-                      className='p-2 text-gray-400 hover:text-red-500 transition-colors'>
+                      className='p-2 text-gray-400 hover:text-red-500 transition-colors cursor-pointer'>
                       <span className='material-symbols-outlined'>delete</span>
                     </button>
                   </div>
