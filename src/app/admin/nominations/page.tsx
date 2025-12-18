@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import {
   getNominations,
   updateNominationStatus,
@@ -27,7 +28,11 @@ export default function AdminNominationsPage() {
   );
 
   const [recommendations, setRecommendations] = useState<
-    { categoryTitle: string; items: NominationLeaderboardItem[] }[]
+    {
+      categoryId: string;
+      categoryTitle: string;
+      items: NominationLeaderboardItem[];
+    }[]
   >([]);
 
   const processRecommendations = (
@@ -41,15 +46,20 @@ export default function AdminNominationsPage() {
       grouped.get(catId)?.push(item);
     });
 
-    const result: { categoryTitle: string; items: typeof data }[] = [];
+    const result: {
+      categoryId: string;
+      categoryTitle: string;
+      items: typeof data;
+    }[] = [];
     grouped.forEach((items, catId) => {
       // Sort desc within category (already mostly sorted but ensure)
       items.sort((a, b) => b.count - a.count);
-      // Take top 3
+      // Take top 5
       if (items.length > 0) {
         result.push({
+          categoryId: catId,
           categoryTitle: items[0].category.title,
-          items: items.slice(0, 3), // Top 3 per category
+          items: items.slice(0, 5), // Top 5 per category
         });
       }
     });
@@ -165,11 +175,21 @@ export default function AdminNominationsPage() {
             <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
               {recommendations.map((rec) => (
                 <div
-                  key={rec.categoryTitle}
+                  key={rec.categoryId}
                   className='rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 shadow-sm'>
-                  <h3 className='font-bold text-gray-900 dark:text-white mb-4 border-b border-gray-100 dark:border-gray-700 pb-2'>
-                    {rec.categoryTitle}
-                  </h3>
+                  <div className='flex items-center justify-between mb-4 border-b border-gray-100 dark:border-gray-700 pb-2'>
+                    <h3 className='font-bold text-gray-900 dark:text-white'>
+                      {rec.categoryTitle}
+                    </h3>
+                    <Link
+                      href={`/admin/nominations/category/${rec.categoryId}`}
+                      className='text-xs font-semibold bg-primary/20 text-primary-accent hover:bg-primary/30 px-2 py-1 rounded-md flex items-center gap-1 transition-colors'>
+                      View All
+                      <span className='material-symbols-outlined text-sm'>
+                        arrow_forward
+                      </span>
+                    </Link>
+                  </div>
                   <div className='space-y-4'>
                     {rec.items.map((item, index) => (
                       <div

@@ -18,7 +18,6 @@ import {
   StaffMember as SupabaseStaff,
 } from '@/supabase/services/staff';
 import { castVote, hasUserVoted } from '@/supabase/services/votes';
-import { getNominationsByCategory } from '@/supabase/services/nominations';
 import { useAuth } from '@/supabase/hooks/useAuth';
 import { useToast } from '@/context/ToastContext';
 import { AwardCategory, Staff } from '@/types';
@@ -118,20 +117,16 @@ export default function CategoryPage() {
 
         // 3. Fetch List based on Phase
         if (phase === 'voting') {
-          // Fetch Shortlisted Candidates (Accepted Nominations)
+          // Fetch Finalists (nominees marked as is_finalist = true)
           try {
-            const noms = await getNominationsByCategory(categoryId);
-            // Filter for shortlisted/approved to be finalists
-            // Assuming 'shortlisted' status is the key, but fallback to 'approved' if simpler logic used
-            const finalists = noms
-              .filter((n) => n.status === 'shortlisted')
-              .map((n) => mapStaff(n.nominee));
-
-            // Deduplicate (in case user nominated same person twice and both approved - db constraints should prevent but safety first)
-            const uniqueFinalists = Array.from(
-              new Map(finalists.map((s) => [s.id, s])).values()
+            const { getFinalistsByCategory } = await import(
+              '@/supabase/services/nominations'
             );
-            fetchedStaff = uniqueFinalists;
+            const finalistData = await getFinalistsByCategory(categoryId);
+
+            // Map to Staff type
+            const finalists = finalistData.map((f) => mapStaff(f.nominee));
+            fetchedStaff = finalists;
 
             // Check if user has voted
             if (user && categoryId) {
@@ -215,38 +210,6 @@ export default function CategoryPage() {
   };
 
   const handleNominationSubmit = async (reason: string) => {
-    // Current nomination logic (redirect to /nominations or handle here)
-    // Reusing existing logic but mapped to new structure
-    // Actually, I previously built a separate /nominations/[id] page.
-    // If we are unifying, we should use that logic here or redirect.
-    // The previous file had NominationFormModal local logic. I'll keep it consistent.
-    // BUT wait, I implemented /src/app/nominations/[id]/page.tsx in Step 327!
-    // The user request was to "Update Public Category Page".
-    // I should probably redirect to that page for Nomination phase, OR bring logic here.
-    // Given the task was "Update Public Category Page", I will implement logic here directly to be self-contained as per previous design.
-
-    // However, the `Nominations Feature` task created `/nominations/[id]`.
-    // Let's stick to this page being the main entry.
-    // Actually, for Nomination Phase, let's redirect to the dedicated nomination page if we want consistency?
-    // OR just handle modal here. The modal logic was already here in original file.
-    // I previously implemented `handleNominationSubmit` calling `castVote` incorrectly (my bad in previous turn?
-    // Wait, Step 368 view showed `castVote` usage for nomination? That was weird.
-    // Ah, line 165 calls `castVote`. That was definitely wrong for nominations.
-    // I should fix it to call `createNomination`.
-
-    // Correction: I will import `createNomination` and use it.
-
-    // Wait, I can't import `createNomination` easily if I didn't add it in imports.
-    // I added `import { createNomination } ...` is missing in the file I just wrote?
-    // I need to add it.
-    // Let me fix the imports in this file write.
-
-    // Logic:
-    // If Phase == Nomination: Open Modal -> Call createNomination
-    // If Phase == Voting: Call castVote
-
-    // I will write the file with `createNomination` imported.
-
     if (!user || !category || !selectedStaffId) return;
 
     setSubmitting(true);
@@ -319,7 +282,7 @@ export default function CategoryPage() {
                 </p>
               </div>
               <div
-                className={`px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider ${
+                className={`px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide whitespace-nowrap ${
                   currentPhase === 'voting'
                     ? 'bg-purple-100 text-purple-700'
                     : currentPhase === 'closed'
@@ -403,7 +366,7 @@ export default function CategoryPage() {
           {currentPhase === 'voting' && alreadyVoted && (
             <div className='bg-blue-50 text-blue-800 p-4 rounded-lg flex items-center gap-2'>
               <span className='material-symbols-outlined'>info</span>
-              You have already cast your vote int this category.
+              You have already cast your vote for this category.
             </div>
           )}
 

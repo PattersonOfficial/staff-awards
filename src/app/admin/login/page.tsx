@@ -8,6 +8,7 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -75,16 +76,27 @@ export default function AdminLoginPage() {
                 className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
                 Password
               </label>
-              <input
-                id='password'
-                name='password'
-                type='password'
-                autoComplete='current-password'
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className='mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm'
-              />
+              <div className='relative mt-1'>
+                <input
+                  id='password'
+                  name='password'
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete='current-password'
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className='block w-full rounded-md border border-gray-300 px-3 py-2 pr-10 shadow-sm focus:border-primary focus:outline-none focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm'
+                />
+                <button
+                  type='button'
+                  onClick={() => setShowPassword(!showPassword)}
+                  className='absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors'
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}>
+                  <span className='material-symbols-outlined text-xl'>
+                    {showPassword ? 'visibility_off' : 'visibility'}
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
 

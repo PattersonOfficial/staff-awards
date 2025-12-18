@@ -291,3 +291,159 @@ export async function getNominationLeaderboard(): Promise<
   // Sort by count descending
   return leaderboard.sort((a, b) => b.count - a.count);
 }
+
+// ==================== FINALIST FUNCTIONS ====================
+
+export interface NomineeWithCount {
+  nominee_id: string;
+  nominee: Tables<'staff'>;
+  nomination_count: number;
+  is_finalist: boolean;
+}
+
+/**
+ * Get all nominees for a category with their nomination counts and finalist status
+ */
+export async function getNomineesForCategoryWithCounts(
+  categoryId: string
+): Promise<NomineeWithCount[]> {
+  const { data, error } = await supabase
+    .from('nominations')
+    .select(
+      `
+      nominee_id,
+      is_finalist,
+      nominee:staff!nominations_nominee_id_fkey(*)
+    `
+    )
+    .eq('category_id', categoryId)
+    .eq('status', 'approved');
+
+  if (error) throw error;
+  if (!data) return [];
+
+  // Define type for query result (is_finalist may not be in generated types yet)
+  type NominationRow = {
+    nominee_id: string;
+    is_finalist: boolean | null;
+    nominee: Tables<'staff'>;
+  };
+
+  // Aggregate by nominee
+  const nomineeMap = new Map<string, NomineeWithCount>();
+
+  (data as NominationRow[]).forEach((nom) => {
+    if (!nom.nominee_id || !nom.nominee) return;
+
+    const existing = nomineeMap.get(nom.nominee_id);
+    if (existing) {
+      existing.nomination_count += 1;
+      // If any nomination is finalist, mark as finalist
+      if (nom.is_finalist) existing.is_finalist = true;
+    } else {
+      nomineeMap.set(nom.nominee_id, {
+        nominee_id: nom.nominee_id,
+        nominee: nom.nominee as Tables<'staff'>,
+        nomination_count: 1,
+        is_finalist: nom.is_finalist || false,
+      });
+    }
+  });
+
+  // Convert to array and sort by count descending
+  return Array.from(nomineeMap.values()).sort(
+    (a, b) => b.nomination_count - a.nomination_count
+  );
+}
+
+/**
+ * Mark selected nominees as finalists for a category
+ * This updates ALL their nominations in this category to is_finalist = true
+ */
+export async function markAsFinalists(
+  categoryId: string,
+  nomineeIds: string[]
+): Promise<void> {
+  console.log('markAsFinalists called with:', { categoryId, nomineeIds });
+
+  const { data, error, count } = await supabase
+    .from('nominations')
+    .update({ is_finalist: true } as never)
+    .eq('category_id', categoryId)
+    .in('nominee_id', nomineeIds)
+    .select();
+
+  console.log('markAsFinalists result:', { data, error, count });
+
+  if (error) {
+    console.error('markAsFinalists error:', error);
+    throw error;
+  }
+
+  console.log(`Updated ${data?.length || 0} nominations as finalists`);
+}
+
+/**
+ * Get finalists for a category (for voting page)
+ * This directly queries for nominations marked as finalists
+ */
+export async function getFinalistsByCategory(
+  categoryId: string
+): Promise<NomineeWithCount[]> {
+  const { data, error } = await supabase
+    .from('nominations')
+    .select(
+      `
+      nominee_id,
+      is_finalist,
+      nominee:staff!nominations_nominee_id_fkey(*)
+    `
+    )
+    .eq('category_id', categoryId)
+    .eq('is_finalist', true);
+
+  if (error) {
+    console.error('Error fetching finalists:', error);
+    throw error;
+  }
+
+  if (!data || data.length === 0) {
+    console.log('No finalists found for category:', categoryId);
+    return [];
+  }
+
+  console.log('Raw finalist data:', data);
+
+  // Define type for query result
+  type NominationRow = {
+    nominee_id: string;
+    is_finalist: boolean | null;
+    nominee: Tables<'staff'>;
+  };
+
+  // Aggregate by nominee (in case multiple nominations for same person)
+  const nomineeMap = new Map<string, NomineeWithCount>();
+
+  (data as NominationRow[]).forEach((nom) => {
+    if (!nom.nominee_id || !nom.nominee) return;
+
+    const existing = nomineeMap.get(nom.nominee_id);
+    if (existing) {
+      existing.nomination_count += 1;
+    } else {
+      nomineeMap.set(nom.nominee_id, {
+        nominee_id: nom.nominee_id,
+        nominee: nom.nominee as Tables<'staff'>,
+        nomination_count: 1,
+        is_finalist: true,
+      });
+    }
+  });
+
+  const result = Array.from(nomineeMap.values()).sort(
+    (a, b) => b.nomination_count - a.nomination_count
+  );
+
+  console.log('Processed finalists:', result);
+  return result;
+}
