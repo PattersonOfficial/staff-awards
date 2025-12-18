@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/supabase/hooks/useAuth';
 import LogoutConfirmationModal from '@/components/ui/LogoutConfirmationModal';
+import FeedbackModal from '@/components/ui/FeedbackModal';
 import Avatar from '@/components/ui/Avatar';
 
 export default function Header() {
@@ -14,6 +15,7 @@ export default function Header() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const userName = user?.staff?.name || user?.fullName || user?.email || 'User';
@@ -117,8 +119,22 @@ export default function Header() {
                         </p>
                       </div>
                       <button
+                        onClick={() => {
+                          setIsFeedbackModalOpen(true);
+                          setIsDropdownOpen(false);
+                        }}
+                        className='flex w-full items-center gap-2 cursor-pointer text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'>
+                        <span className='material-symbols-outlined text-lg'>
+                          feedback
+                        </span>
+                        Give Feedback
+                      </button>
+                      <button
                         onClick={handleLogout}
-                        className='block w-full cursor-pointer text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'>
+                        className='flex w-full items-center gap-2 cursor-pointer text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'>
+                        <span className='material-symbols-outlined text-lg'>
+                          logout
+                        </span>
                         Sign out
                       </button>
                     </div>
@@ -208,6 +224,11 @@ export default function Header() {
         isOpen={isLogoutModalOpen}
         onClose={() => setIsLogoutModalOpen(false)}
         onConfirm={handleConfirmLogout}
+      />
+
+      <FeedbackModal
+        isOpen={isFeedbackModalOpen}
+        onClose={() => setIsFeedbackModalOpen(false)}
       />
     </>
   );

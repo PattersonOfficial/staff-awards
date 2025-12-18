@@ -95,6 +95,18 @@ export default function AdminSidebar() {
           <span className='text-sm font-medium'>Results</span>
         </Link>
         <Link
+          href='/admin/analytics'
+          className={getLinkClass('/admin/analytics')}>
+          <span className='material-symbols-outlined text-xl'>analytics</span>
+          <span className='text-sm font-medium'>Analytics</span>
+        </Link>
+        <Link
+          href='/admin/feedback'
+          className={getLinkClass('/admin/feedback')}>
+          <span className='material-symbols-outlined text-xl'>feedback</span>
+          <span className='text-sm font-medium'>Feedback</span>
+        </Link>
+        <Link
           href='/admin/settings'
           className={getLinkClass('/admin/settings')}>
           <span className='material-symbols-outlined text-xl'>settings</span>

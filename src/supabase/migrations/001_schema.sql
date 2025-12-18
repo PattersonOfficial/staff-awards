@@ -130,6 +130,24 @@ CREATE TABLE IF NOT EXISTS public.votes (
 );
 
 -- ============================================
+-- 7. FEEDBACK TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS public.feedback (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  user_email text NOT NULL,
+  user_name text,
+  type text CHECK (type IN ('bug', 'feature', 'improvement', 'other')) DEFAULT 'other',
+  message text NOT NULL,
+  status text CHECK (status IN ('new', 'reviewed', 'resolved')) DEFAULT 'new',
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Index for faster lookups
+CREATE INDEX IF NOT EXISTS idx_feedback_status ON public.feedback(status);
+CREATE INDEX IF NOT EXISTS idx_feedback_created_at ON public.feedback(created_at DESC);
+
+-- ============================================
 -- DISABLE ROW LEVEL SECURITY
 -- ============================================
 ALTER TABLE public.departments DISABLE ROW LEVEL SECURITY;
@@ -138,3 +156,4 @@ ALTER TABLE public.admins DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.categories DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.nominations DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.votes DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.feedback DISABLE ROW LEVEL SECURITY;
