@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { isAuthenticatedAdmin } from '@/supabase/services/adminAuth';
+import {
+  isAuthenticatedAdmin,
+  validateAdminSession,
+} from '@/supabase/services/adminAuth';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 
 export default function AdminLayout({
@@ -23,13 +26,26 @@ export default function AdminLayout({
       return;
     }
 
-    const isAuth = isAuthenticatedAdmin();
-    if (!isAuth) {
-      router.push('/admin/login');
-    } else {
-      setAuthorized(true);
-    }
-    setChecking(false);
+    const checkAuth = async () => {
+      // First check if there's a session token at all
+      const hasSession = isAuthenticatedAdmin();
+      if (!hasSession) {
+        router.push('/admin/login');
+        setChecking(false);
+        return;
+      }
+
+      // Validate session against database (checks session_version)
+      const isValid = await validateAdminSession();
+      if (!isValid) {
+        router.push('/admin/login');
+      } else {
+        setAuthorized(true);
+      }
+      setChecking(false);
+    };
+
+    checkAuth();
   }, [pathname, router]);
 
   if (checking) {
@@ -40,10 +56,7 @@ export default function AdminLayout({
     );
   }
 
-  // If on login page, render children without sidebar structure (usually)
-  // But layout wraps everything. We might want to render sidebar only if authorized and NOT on login page.
-  // However, the login page is typically outside this layout if it was /login, but here it is /admin/login.
-  // Let's check pathname.
+  // If on login page, render children without sidebar structure
   if (pathname === '/admin/login') {
     return <>{children}</>;
   }
