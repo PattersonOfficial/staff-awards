@@ -167,7 +167,7 @@ export default function AnalyticsPage() {
             {statusBreakdown.length > 0 ? (
               <div className='flex items-center gap-8'>
                 {/* Donut Chart */}
-                <div className='relative w-40 h-40'>
+                <div className='relative w-65 h-65'>
                   <svg
                     viewBox='0 0 100 100'
                     className='w-full h-full transform -rotate-90'>
