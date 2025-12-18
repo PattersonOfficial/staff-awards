@@ -147,22 +147,6 @@ export default function AdminNominationsPage() {
           </p>
         </div>
 
-        {/* Filter Tabs */}
-        <div className='flex gap-2 mb-6'>
-          {['all', 'pending', 'approved', 'rejected'].map((status) => (
-            <button
-              key={status}
-              onClick={() => setFilter(status as any)}
-              className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                filter === status
-                  ? 'bg-primary text-white'
-                  : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700'
-              }`}>
-              {status.charAt(0).toUpperCase() + status.slice(1)}
-            </button>
-          ))}
-        </div>
-
         {/* Recommendations Section */}
         {recommendations.length > 0 && (
           <div className='mb-8'>
@@ -228,6 +212,22 @@ export default function AdminNominationsPage() {
 
         {/* Filters and Table */}
         <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow'>
+          {/* Filter Tabs */}
+          <div className='flex gap-2 p-4 border-b border-gray-200 dark:border-gray-700'>
+            {['all', 'pending', 'approved', 'rejected'].map((status) => (
+              <button
+                key={status}
+                onClick={() => setFilter(status as any)}
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  filter === status
+                    ? 'bg-primary text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                }`}>
+                {status.charAt(0).toUpperCase() + status.slice(1)}
+              </button>
+            ))}
+          </div>
+
           {loading ? (
             <div className='flex p-12 justify-center'>
               <div className='h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent'></div>

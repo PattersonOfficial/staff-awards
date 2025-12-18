@@ -23,11 +23,13 @@ export default function CategoryShortlistPage() {
   const [category, setCategory] = useState<{ title: string } | null>(null);
   const [nominees, setNominees] = useState<NomineeWithCount[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedRemoveIds, setSelectedRemoveIds] = useState<Set<string>>(
+    new Set()
+  );
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
-  const [nomineeToRemove, setNomineeToRemove] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -106,39 +108,51 @@ export default function CategoryShortlistPage() {
     }
   };
 
-  const handleRemoveFinalist = (nomineeId: string) => {
-    setNomineeToRemove(nomineeId);
-    setIsRemoveModalOpen(true);
+  const handleToggleRemove = (nomineeId: string) => {
+    const newSelected = new Set(selectedRemoveIds);
+    if (newSelected.has(nomineeId)) {
+      newSelected.delete(nomineeId);
+    } else {
+      newSelected.add(nomineeId);
+    }
+    setSelectedRemoveIds(newSelected);
   };
 
-  const confirmRemoveFinalist = async () => {
-    if (!nomineeToRemove) return;
+  const handleSelectAllRemove = () => {
+    if (selectedRemoveIds.size === currentFinalists.length) {
+      setSelectedRemoveIds(new Set());
+    } else {
+      setSelectedRemoveIds(new Set(currentFinalists.map((n) => n.nominee_id)));
+    }
+  };
+
+  const confirmRemoveFinalists = async () => {
+    if (selectedRemoveIds.size === 0) return;
 
     setSaving(true);
     try {
-      // Note: We need to add a removeFinalist function to the service
       const { supabase } = await import('@/supabase/client');
       const { error } = await supabase
         .from('nominations')
         .update({ is_finalist: false } as never)
         .eq('category_id', categoryId)
-        .eq('nominee_id', nomineeToRemove);
+        .in('nominee_id', Array.from(selectedRemoveIds));
 
       if (error) throw error;
 
-      toast.success('Finalist removed');
+      toast.success(`${selectedRemoveIds.size} finalist(s) removed`);
       setNominees((prev) =>
         prev.map((n) =>
-          n.nominee_id === nomineeToRemove ? { ...n, is_finalist: false } : n
+          selectedRemoveIds.has(n.nominee_id) ? { ...n, is_finalist: false } : n
         )
       );
+      setSelectedRemoveIds(new Set());
     } catch (error) {
-      console.error('Error removing finalist:', error);
-      toast.error('Failed to remove finalist');
+      console.error('Error removing finalists:', error);
+      toast.error('Failed to remove finalists');
     } finally {
       setSaving(false);
       setIsRemoveModalOpen(false);
-      setNomineeToRemove(null);
     }
   };
 
@@ -178,18 +192,59 @@ export default function CategoryShortlistPage() {
         {/* Current Finalists */}
         {currentFinalists.length > 0 && (
           <div className='mb-8'>
-            <h2 className='text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2'>
-              <span className='material-symbols-outlined text-green-500'>
-                verified
-              </span>
-              Current Finalists ({currentFinalists.length}/{MAX_FINALISTS})
-            </h2>
+            <div className='flex items-center justify-between mb-4'>
+              <h2 className='text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2'>
+                <span className='material-symbols-outlined text-green-500'>
+                  verified
+                </span>
+                Current Finalists ({currentFinalists.length}/{MAX_FINALISTS})
+              </h2>
+              <div className='flex items-center gap-3'>
+                {currentFinalists.length > 0 && (
+                  <button
+                    onClick={handleSelectAllRemove}
+                    className='text-sm text-gray-500 hover:text-gray-700'>
+                    {selectedRemoveIds.size === currentFinalists.length
+                      ? 'Deselect All'
+                      : 'Select All'}
+                  </button>
+                )}
+                {selectedRemoveIds.size > 0 && (
+                  <button
+                    onClick={() => setIsRemoveModalOpen(true)}
+                    disabled={saving}
+                    className='flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500 text-white font-semibold text-sm hover:bg-red-600 disabled:opacity-50'>
+                    <span className='material-symbols-outlined text-sm'>
+                      delete
+                    </span>
+                    Remove {selectedRemoveIds.size}
+                  </button>
+                )}
+              </div>
+            </div>
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
               {currentFinalists.map((nominee, index) => (
                 <div
                   key={nominee.nominee_id}
-                  className='flex items-center justify-between p-4 rounded-xl border-2 border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20'>
+                  onClick={() => handleToggleRemove(nominee.nominee_id)}
+                  className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                    selectedRemoveIds.has(nominee.nominee_id)
+                      ? 'border-red-400 bg-red-50 dark:bg-red-900/20'
+                      : 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 hover:border-green-400'
+                  }`}>
                   <div className='flex items-center gap-3'>
+                    <div
+                      className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-colors ${
+                        selectedRemoveIds.has(nominee.nominee_id)
+                          ? 'bg-red-500 border-red-500'
+                          : 'border-gray-300 dark:border-gray-600'
+                      }`}>
+                      {selectedRemoveIds.has(nominee.nominee_id) && (
+                        <span className='material-symbols-outlined text-white text-sm'>
+                          check
+                        </span>
+                      )}
+                    </div>
                     <div className='flex items-center justify-center w-8 h-8 rounded-full bg-green-500 text-white text-sm font-bold'>
                       {index + 1}
                     </div>
@@ -207,14 +262,6 @@ export default function CategoryShortlistPage() {
                       </p>
                     </div>
                   </div>
-                  <button
-                    onClick={() => handleRemoveFinalist(nominee.nominee_id)}
-                    className='p-2 text-gray-400 hover:text-red-500 transition-colors'
-                    title='Remove finalist'>
-                    <span className='material-symbols-outlined text-lg'>
-                      close
-                    </span>
-                  </button>
                 </div>
               ))}
             </div>
@@ -370,10 +417,16 @@ export default function CategoryShortlistPage() {
       <ConfirmationModal
         isOpen={isRemoveModalOpen}
         onClose={() => setIsRemoveModalOpen(false)}
-        onConfirm={confirmRemoveFinalist}
-        title='Remove Finalist'
-        message='Are you sure you want to remove this person from the finalists? They will no longer appear in the voting phase.'
-        confirmText='Remove'
+        onConfirm={confirmRemoveFinalists}
+        title={`Remove ${selectedRemoveIds.size} Finalist${
+          selectedRemoveIds.size > 1 ? 's' : ''
+        }`}
+        message={`Are you sure you want to remove ${
+          selectedRemoveIds.size
+        } finalist${
+          selectedRemoveIds.size > 1 ? 's' : ''
+        } from the voting phase? They will no longer appear for staff to vote on.`}
+        confirmText={`Remove ${selectedRemoveIds.size}`}
         isDangerous={true}
       />
     </main>

@@ -364,23 +364,13 @@ export async function markAsFinalists(
   categoryId: string,
   nomineeIds: string[]
 ): Promise<void> {
-  console.log('markAsFinalists called with:', { categoryId, nomineeIds });
-
-  const { data, error, count } = await supabase
+  const { error } = await supabase
     .from('nominations')
     .update({ is_finalist: true } as never)
     .eq('category_id', categoryId)
-    .in('nominee_id', nomineeIds)
-    .select();
+    .in('nominee_id', nomineeIds);
 
-  console.log('markAsFinalists result:', { data, error, count });
-
-  if (error) {
-    console.error('markAsFinalists error:', error);
-    throw error;
-  }
-
-  console.log(`Updated ${data?.length || 0} nominations as finalists`);
+  if (error) throw error;
 }
 
 /**
@@ -402,17 +392,11 @@ export async function getFinalistsByCategory(
     .eq('category_id', categoryId)
     .eq('is_finalist', true);
 
-  if (error) {
-    console.error('Error fetching finalists:', error);
-    throw error;
-  }
+  if (error) throw error;
 
   if (!data || data.length === 0) {
-    console.log('No finalists found for category:', categoryId);
     return [];
   }
-
-  console.log('Raw finalist data:', data);
 
   // Define type for query result
   type NominationRow = {
@@ -440,10 +424,7 @@ export async function getFinalistsByCategory(
     }
   });
 
-  const result = Array.from(nomineeMap.values()).sort(
+  return Array.from(nomineeMap.values()).sort(
     (a, b) => b.nomination_count - a.nomination_count
   );
-
-  console.log('Processed finalists:', result);
-  return result;
 }

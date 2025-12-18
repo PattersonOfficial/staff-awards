@@ -89,8 +89,8 @@ export default function CategoryPage() {
           if (catData) {
             fetchedCategory = mapCategory(catData);
           }
-        } catch (err) {
-          console.log('Supabase category fetch failed', err);
+        } catch {
+          // Category fetch failed silently
         }
 
         setCategory(fetchedCategory);
@@ -143,8 +143,8 @@ export default function CategoryPage() {
             if (staffData && staffData.length > 0) {
               fetchedStaff = staffData.map(mapStaff);
             }
-          } catch (err) {
-            console.log('Supabase staff fetch failed', err);
+          } catch {
+            // Staff fetch failed silently
           }
         }
 
